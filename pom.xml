@@ -16,6 +16,7 @@
 	<url/>
 	<properties>
 		<java.version>25</java.version>
+        <spotless.version>3.0.0</spotless.version>
 	</properties>
 	<dependencies>
         <dependency>
@@ -50,6 +51,8 @@
         </dependency>
     </dependencies>
 
+
+
 	<build>
 		<plugins>
 			<plugin>
@@ -64,6 +67,47 @@
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/main/java/**/*.java</include>
+                            <include>src/test/java/**/*.java</include>
+                        </includes>
+
+                        <googleJavaFormat>
+                            <version>1.30.0</version>
+                            <style>GOOGLE</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                            <formatJavadoc>false</formatJavadoc>
+                        </googleJavaFormat>
+
+                        <importOrder />
+                        <removeUnusedImports />
+                        <forbidWildcardImports />
+                        <formatAnnotations />
+
+                        <licenseHeader>
+                            <content>
+                                /* Raymice - https://github.com/Raymice - $YEAR */
+                            </content>
+                        </licenseHeader>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
 		</plugins>
 	</build>
 
