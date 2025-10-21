@@ -54,6 +54,8 @@ public class RoutingConfig {
     @NotBlank private String input;
     // Queue for messages to find the type
     @NotBlank private String findType;
+    // Queue for messages of type pacs.008.001.08
+    @NotBlank private String pacs008;
   }
 
   @PostConstruct
