@@ -47,14 +47,6 @@ public class InputFileRoute extends RouteBuilder {
         .to(outputUnsupportedPath.toString())
         .endChoice()
         .end();
-
-    // Consumes files from inProgress directory
-    from(outputInProgressPath.toString())
-        .routeId("InProgressToActiveMQ")
-        .log("📤 Sending file to ActiveMQ: ${file:name}")
-        // TODO: setup connection factory
-        .to("activemq:queue:{{app.routing.queue.input}}?testConnectionOnStartup=true")
-        .log("✅ File sent to ActiveMQ: ${file:name}");
   }
 
   // Step 1: Validate against XSD schema
