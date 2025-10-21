@@ -48,8 +48,4 @@ public class InputFileRoute extends RouteBuilder {
         .endChoice()
         .end();
   }
-
-  // Step 1: Validate against XSD schema
-  // Step 2: Unmarshal XML to Java Object
-  // Step 3 : Process the Java Object as needed
 }

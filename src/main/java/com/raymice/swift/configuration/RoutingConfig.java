@@ -19,7 +19,7 @@ public class RoutingConfig {
 
   @Valid private Input input;
   @Valid private Output output;
-  @Valid private Error error;
+  @Valid private Queue queue;
 
   @Data
   public static class Input {
@@ -48,9 +48,18 @@ public class RoutingConfig {
     @NotNull private URI unsupported;
   }
 
+  @Data
+  public static class Queue {
+    // Queue for input messages, will validate XML well formedness
+    @NotBlank private String input;
+    // Queue for messages to find the type
+    @NotBlank private String findType;
+  }
+
   @PostConstruct
   void postConstruct() {
     System.out.println("Input: " + input.toString());
     System.out.println("Output: " + output.toString());
+    System.out.println("Queue: " + queue.toString());
   }
 }
