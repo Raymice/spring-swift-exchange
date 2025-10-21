@@ -22,13 +22,16 @@ public class InputFileRoute extends RouteBuilder {
     // Noop=false => the original file not remains in the source directory after Camel has processed
     // it.
     final URI inputPath = URI.create(String.format("file:%s?noop=false", input.getPath()));
-    final URI outputInProgressPath = URI.create(String.format("file:%s", output.getInProgress()));
+    final URI outputInProgressPath =
+        URI.create(String.format("file:%s?noop=false", output.getInProgress()));
     final URI outputErrorPath = URI.create(String.format("file:%s", output.getError()));
     final URI outputUnsupportedPath = URI.create(String.format("file:%s", output.getUnsupported()));
 
     // Global exception handling for the route
     onException(Exception.class)
-        .log("‼️Error processing file: ${file:name} - ${exception.message}")
+        .log(
+            "‼️Error processing file: ${file:name} - ${exception.message} -"
+                + " ${exception.stacktrace}")
         .to(outputErrorPath.toString())
         .handled(true);
 
@@ -49,8 +52,9 @@ public class InputFileRoute extends RouteBuilder {
     from(outputInProgressPath.toString())
         .routeId("InProgressToActiveMQ")
         .log("📤 Sending file to ActiveMQ: ${file:name}")
-        // TODO REPLACE WITH ACTIVEMQ COMPONENT
-        .to(URI.create(String.format("file:%s", output.getSuccess())).toString());
+        // TODO: setup connection factory
+        .to("activemq:queue:{{app.routing.queue.input}}?testConnectionOnStartup=true")
+        .log("✅ File sent to ActiveMQ: ${file:name}");
   }
 
   // Step 1: Validate against XSD schema
