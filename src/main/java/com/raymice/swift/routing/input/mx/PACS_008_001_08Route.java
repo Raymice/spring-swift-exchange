@@ -20,15 +20,15 @@ public class PACS_008_001_08Route extends DefaultRoute {
         .routeId(getRouteId())
         .log(
             "📥 Receiving pacs.008.001.08 message from ActiveMQ (queue=${header.JMSDestination}"
-                + " id=${header.JMSMessageID})")
+                + " uuid=${header.UUID})")
         .onException(Exception.class)
         .log(
-            "‼️Error processing message (id=${header.JMSMessageID}) - ${exception.message} -"
+            "‼️Error processing message (uuid=${header.UUID}) - ${exception.message} -"
                 + " ${exception.stacktrace}")
         .to(getErrorEndpoint())
         .handled(true)
         .end()
-        .log("Need to implement PACS.008.001.08 specific processing here...")
+        .log("Need to implement PACS.008.001.08 specific processing here... (uuid=${header.UUID})")
         .end();
   }
 }

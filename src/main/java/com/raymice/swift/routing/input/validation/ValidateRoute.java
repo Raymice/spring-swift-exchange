@@ -27,10 +27,10 @@ public class ValidateRoute extends DefaultRoute {
         .routeId(getRouteId())
         .log(
             "🔍 Validating well formed message from ActiveMQ (queue=${header.JMSDestination}"
-                + " id=${header.JMSMessageID})")
+                + " uuid=${header.UUID})")
         .onException(Exception.class)
         .log(
-            "‼️Error processing message (id=${header.JMSMessageID}) - ${exception.message} -"
+            "‼️Error processing message (uuid=${header.UUID}) - ${exception.message} -"
                 + " ${exception.stacktrace}")
         .to(getErrorEndpoint())
         .handled(true)
@@ -55,11 +55,11 @@ public class ValidateRoute extends DefaultRoute {
             })
         .choice()
         .when(header(MX_ID).isEqualTo(PACS_008_001_08))
-        .log("✅ Message is an ${header.MX_ID} (id=${header.JMSMessageID})")
-        .log("📤 Sending message to PACS.008 queue (id=${header.JMSMessageID})")
+        .log("✅ Message is an ${header.MX_ID} (uuid=${header.UUID})")
+        .log("📤 Sending message to PACS.008 queue (uuid=${header.UUID})")
         .to(outputQueueUri) // Forward to next queue
         .otherwise()
-        .log("❌ Message is not supported type='${header.MX_ID}' (id=${header.JMSMessageID})")
+        .log("❌ Message is not supported type='${header.MX_ID}' (uuid=${header.UUID})")
         .to(getErrorEndpoint())
         .endChoice()
         .end();
