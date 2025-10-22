@@ -5,12 +5,18 @@ import java.io.IOException;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class ValidatorUtils {
 
   public static boolean isXMLWellFormed(String xmlstring) {
+
+    if (StringUtils.isBlank(xmlstring)) {
+      return false;
+    }
+
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();

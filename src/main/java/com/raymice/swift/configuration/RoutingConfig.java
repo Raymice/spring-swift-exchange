@@ -52,8 +52,6 @@ public class RoutingConfig {
   public static class Queue {
     // Queue for input messages, will validate XML well formedness
     @NotBlank private String input;
-    // Queue for messages to find the type
-    @NotBlank private String findType;
     // Queue for messages of type pacs.008.001.08
     @NotBlank private String pacs008;
   }
