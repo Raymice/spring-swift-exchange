@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@Slf4j
 public class ValidatorUtils {
 
   public static boolean isXMLWellFormed(String xmlstring) {
@@ -24,10 +26,10 @@ public class ValidatorUtils {
           new InputSource(new StringReader(xmlstring))); // Parsing will fail if not well-formed
       return true;
     } catch (SAXException | IOException e) {
-      System.err.println("XML is not well-formed: " + e.getMessage());
+      log.error("XML is not well-formed: {}", e.getMessage());
       return false;
     } catch (Exception e) {
-      System.err.println("An unexpected error occurred: " + e.getMessage());
+      log.error("An unexpected error occurred: {}", e.getMessage());
       return false;
     }
   }

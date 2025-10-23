@@ -1,7 +1,6 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.configuration;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -54,12 +53,5 @@ public class RoutingConfig {
     @NotBlank private String input;
     // Queue for messages of type pacs.008.001.08
     @NotBlank private String pacs008;
-  }
-
-  @PostConstruct
-  void postConstruct() {
-    System.out.println("Input: " + input.toString());
-    System.out.println("Output: " + output.toString());
-    System.out.println("Queue: " + queue.toString());
   }
 }

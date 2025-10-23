@@ -1,12 +1,12 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.routing.input.file;
 
-import static com.raymice.swift.constant.Global.ORIGINAL_FILE_NAME;
 import static com.raymice.swift.utils.IdentifierUtils.getOriginalFileName;
 import static com.raymice.swift.utils.IdentifierUtils.getUuid;
+import static com.raymice.swift.utils.IdentifierUtils.setOriginalFileName;
+import static com.raymice.swift.utils.IdentifierUtils.setUuid;
 
 import com.raymice.swift.configuration.RoutingConfig;
-import com.raymice.swift.constant.Global;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import java.net.URI;
@@ -42,8 +42,8 @@ public class InProgressFileRoute extends DefaultRoute {
               String fileName = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
               String originalFileName = getOriginalFileName(fileName);
               String uuid = getUuid(fileName);
-              exchange.getIn().setHeader(ORIGINAL_FILE_NAME, originalFileName);
-              exchange.getIn().setHeader(Global.UUID, uuid);
+              setOriginalFileName(exchange, originalFileName);
+              setUuid(exchange, uuid);
             })
         // TODO: setup connection factory
         .to(outputQueueUri)
