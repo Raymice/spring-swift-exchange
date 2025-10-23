@@ -1,9 +1,10 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.utils;
+package com.raymice.swift.unit.utils;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.raymice.swift.utils.ValidatorUtils;
 import org.junit.jupiter.api.Test;
 
 class ValidatorUtilsTest {

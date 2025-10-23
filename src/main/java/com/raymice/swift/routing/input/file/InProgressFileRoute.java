@@ -4,6 +4,7 @@ package com.raymice.swift.routing.input.file;
 import static com.raymice.swift.utils.IdentifierUtils.getOriginalFileName;
 import static com.raymice.swift.utils.IdentifierUtils.getUuid;
 import static com.raymice.swift.utils.IdentifierUtils.setOriginalFileName;
+import static com.raymice.swift.utils.IdentifierUtils.setUpdatedFileName;
 import static com.raymice.swift.utils.IdentifierUtils.setUuid;
 
 import com.raymice.swift.configuration.RoutingConfig;
@@ -42,7 +43,9 @@ public class InProgressFileRoute extends DefaultRoute {
               String fileName = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
               String originalFileName = getOriginalFileName(fileName);
               String uuid = getUuid(fileName);
+
               setOriginalFileName(exchange, originalFileName);
+              setUpdatedFileName(exchange, fileName);
               setUuid(exchange, uuid);
             })
         // TODO: setup connection factory

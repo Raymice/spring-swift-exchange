@@ -1,9 +1,10 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.utils;
+package com.raymice.swift.unit.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.raymice.swift.utils.ActiveMqUtils;
 import org.junit.jupiter.api.Test;
 
 class ActiveMqUtilsTest {

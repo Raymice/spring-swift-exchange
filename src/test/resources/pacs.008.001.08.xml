@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08 pacs.008.001.08.xsd">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>MSGID123456789</MsgId>
+            <CreDtTm>2025-10-21T14:30:00</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <TtlIntrBkSttlmAmt Ccy="EUR">100.00</TtlIntrBkSttlmAmt>
+            <IntrBkSttlmDt>2025-10-22</IntrBkSttlmDt>
+            <SttlmInf>
+                <SttlmMtd>CLRG</SttlmMtd>
+            </SttlmInf>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BANKDEBBXXX</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BANKFRPPXXX</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <EndToEndId>NOTPROVIDED</EndToEndId>
+                <TxId>TX123456789</TxId>
+            </PmtId>
+            <Amt>
+                <InstdAmt Ccy="EUR">100.00</InstdAmt>
+            </Amt>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>BANKFRPPXXX</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+            <Cdtr>
+                <Nm>John Doe</Nm>
+                <PstlAdr>
+                    <Ctry>FR</Ctry>
+                    <AdrLine>123 Main Street</AdrLine>
+                </PstlAdr>
+            </Cdtr>
+            <CdtrAcct>
+                <Id>
+                    <IBAN>FR7630001007941234567890185</IBAN>
+                </Id>
+            </CdtrAcct>
+            <Dbtr>
+                <Nm>Jane Smith</Nm>
+                <PstlAdr>
+                    <Ctry>DE</Ctry>
+                    <AdrLine>456 Oak Avenue</AdrLine>
+                </PstlAdr>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>DE89370400440532013000</IBAN>
+                </Id>
+            </DbtrAcct>
+            <RmtInf>
+                <Ustrd>Invoice 12345</Ustrd>
+            </RmtInf>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

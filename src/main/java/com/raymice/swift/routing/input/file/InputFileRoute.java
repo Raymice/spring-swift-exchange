@@ -2,6 +2,7 @@
 package com.raymice.swift.routing.input.file;
 
 import static com.raymice.swift.utils.IdentifierUtils.setOriginalFileName;
+import static com.raymice.swift.utils.IdentifierUtils.setUpdatedFileName;
 import static com.raymice.swift.utils.IdentifierUtils.setUuid;
 
 import com.raymice.swift.configuration.RoutingConfig;
@@ -53,6 +54,7 @@ public class InputFileRoute extends DefaultRoute {
               exchange.getIn().setHeader(Exchange.FILE_NAME, newFileName);
 
               setOriginalFileName(exchange, originalFileName);
+              setUpdatedFileName(exchange, newFileName);
               setUuid(exchange, uuid.toString());
             })
         .log(

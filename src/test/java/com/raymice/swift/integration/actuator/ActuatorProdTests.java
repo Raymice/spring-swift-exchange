@@ -1,5 +1,5 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift;
+package com.raymice.swift.integration.actuator;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,9 +14,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("prod")
 @AutoConfigureMockMvc
-class ActuatorDevTests {
+class ActuatorProdTests {
 
   private final String path = "/actuator";
 
@@ -25,29 +25,16 @@ class ActuatorDevTests {
   @Order(1)
   @Test
   void getInfo() throws Exception {
-    mockMvc
-        .perform(get(String.format("%s/info", path)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.app").exists())
-        .andExpect(jsonPath("$.app.name").value("swift"))
-        .andExpect(jsonPath("$.java").exists());
+    mockMvc.perform(get(String.format("%s/info", path))).andExpect(status().isNotFound());
   }
 
   @Order(2)
   @Test
   void getMetrics() throws Exception {
-    mockMvc.perform(get(String.format("%s/metrics", path))).andExpect(status().isOk());
+    mockMvc.perform(get(String.format("%s/metrics", path))).andExpect(status().isNotFound());
   }
 
   @Order(3)
-  @Test
-  void getJvmMemoryUsed() throws Exception {
-    mockMvc
-        .perform(get(String.format("%s/metrics/jvm.memory.used", path)))
-        .andExpect(status().isOk());
-  }
-
-  @Order(4)
   @Test
   void getHealth() throws Exception {
     Thread.sleep(1000); // Wait for 1 seconds to allow all health indicators to initialize
@@ -57,7 +44,7 @@ class ActuatorDevTests {
         .andExpect(jsonPath("$.status").value("UP"));
   }
 
-  @Order(5)
+  @Order(4)
   @Test
   void getLiveness() throws Exception {
     mockMvc
@@ -66,7 +53,7 @@ class ActuatorDevTests {
         .andExpect(jsonPath("$.status").value("UP"));
   }
 
-  @Order(6)
+  @Order(5)
   @Test
   void getReadiness() throws Exception {
     mockMvc

@@ -59,9 +59,18 @@ public class IdentifierUtils {
     return getHeader(exchange, Global.ORIGINAL_FILE_NAME);
   }
 
+  public static String getUpdatedFileName(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, Global.UPDATED_FILE_NAME);
+  }
+
   public static void setOriginalFileName(Exchange exchange, String originalFileName)
       throws IllegalArgumentException {
     setHeader(exchange, Global.ORIGINAL_FILE_NAME, originalFileName);
+  }
+
+  public static void setUpdatedFileName(Exchange exchange, String updatedFileName)
+      throws IllegalArgumentException {
+    setHeader(exchange, Global.UPDATED_FILE_NAME, updatedFileName);
   }
 
   private static void setHeader(Exchange exchange, String headerName, String headerValue)
