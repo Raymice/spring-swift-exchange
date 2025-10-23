@@ -4,16 +4,28 @@ package com.raymice.swift.utils;
 import com.raymice.swift.constant.Global;
 import java.util.UUID;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.StringUtils;
 
 public class IdentifierUtils {
 
   private static final String delimiter = "$";
 
-  public static String addUuid(String originalFileName, UUID uuid) {
+  public static String addUuid(String originalFileName, UUID uuid) throws IllegalArgumentException {
+    if (StringUtils.isBlank(originalFileName)) {
+      throw new IllegalArgumentException("OriginalFileName name must not be blank", null);
+    }
+    if (uuid == null) {
+      throw new IllegalArgumentException("Uuid name must not be null", null);
+    }
+
     return delimiter + delimiter + uuid + delimiter + delimiter + originalFileName;
   }
 
   public static String getUuid(String fileNameWithUuid) throws RuntimeException {
+    if (StringUtils.isBlank(fileNameWithUuid)) {
+      throw new IllegalArgumentException("FileNameWithUuid name must not be blank", null);
+    }
+
     String[] parts = fileNameWithUuid.split("\\" + delimiter + "\\" + delimiter);
     if (parts.length >= 3) {
       return parts[1];
@@ -22,15 +34,19 @@ public class IdentifierUtils {
     }
   }
 
-  public static String getUuid(Exchange exchange) {
-    return exchange.getIn().getHeader(Global.UUID, String.class);
+  public static String getUuid(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, Global.UUID);
   }
 
-  public static void setUuid(Exchange exchange, String uuid) {
-    exchange.getIn().setHeader(Global.UUID, uuid);
+  public static void setUuid(Exchange exchange, String uuid) throws IllegalArgumentException {
+    setHeader(exchange, Global.UUID, uuid);
   }
 
   public static String getOriginalFileName(String fileNameWithUuid) throws RuntimeException {
+    if (StringUtils.isBlank(fileNameWithUuid)) {
+      throw new IllegalArgumentException("FileNameWithUuid name must not be blank", null);
+    }
+
     String[] parts = fileNameWithUuid.split("\\" + delimiter + "\\" + delimiter);
     if (parts.length >= 3) {
       return parts[2];
@@ -39,11 +55,39 @@ public class IdentifierUtils {
     }
   }
 
-  public static String getOriginalFileName(Exchange exchange) {
-    return exchange.getIn().getHeader(Global.ORIGINAL_FILE_NAME, String.class);
+  public static String getOriginalFileName(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, Global.ORIGINAL_FILE_NAME);
   }
 
-  public static void setOriginalFileName(Exchange exchange, String originalFileName) {
-    exchange.getIn().setHeader(Global.ORIGINAL_FILE_NAME, originalFileName);
+  public static void setOriginalFileName(Exchange exchange, String originalFileName)
+      throws IllegalArgumentException {
+    setHeader(exchange, Global.ORIGINAL_FILE_NAME, originalFileName);
+  }
+
+  private static void setHeader(Exchange exchange, String headerName, String headerValue)
+      throws IllegalArgumentException {
+    if (exchange == null) {
+      throw new IllegalArgumentException("Exchange must not be null", null);
+    }
+    if (StringUtils.isBlank(headerName)) {
+      throw new IllegalArgumentException("HeaderName name must not be blank", null);
+    }
+    if (StringUtils.isBlank(headerValue)) {
+      throw new IllegalArgumentException("HeaderValue name must not be blank", null);
+    }
+
+    exchange.getIn().setHeader(headerName, headerValue);
+  }
+
+  private static String getHeader(Exchange exchange, String headerName)
+      throws IllegalArgumentException {
+    if (exchange == null) {
+      throw new IllegalArgumentException("Exchange must not be null", null);
+    }
+    if (StringUtils.isBlank(headerName)) {
+      throw new IllegalArgumentException("HeaderName name must not be blank", null);
+    }
+
+    return exchange.getIn().getHeader(headerName, String.class);
   }
 }

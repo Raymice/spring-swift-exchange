@@ -22,8 +22,8 @@ public class ValidatorUtils {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
-      builder.parse(
-          new InputSource(new StringReader(xmlstring))); // Parsing will fail if not well-formed
+      // Parsing will fail if not well-formed
+      builder.parse(new InputSource(new StringReader(xmlstring)));
       return true;
     } catch (SAXException | IOException e) {
       log.error("XML is not well-formed: {}", e.getMessage());
