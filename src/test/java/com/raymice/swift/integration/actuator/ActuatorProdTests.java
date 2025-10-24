@@ -5,15 +5,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+@Slf4j
 @SpringBootTest
+@Testcontainers
 @ActiveProfiles("prod")
 @AutoConfigureMockMvc
 class ActuatorProdTests {
@@ -21,6 +30,20 @@ class ActuatorProdTests {
   private final String path = "/actuator";
 
   @Autowired private MockMvc mockMvc;
+
+  @Container
+  static GenericContainer<?> activemq =
+      new GenericContainer<>(DockerImageName.parse("apache/activemq-classic:6.1.7"))
+          .withExposedPorts(61616);
+
+  @DynamicPropertySource
+  static void activemqProperties(DynamicPropertyRegistry registry) throws InterruptedException {
+    final String host = activemq.getHost();
+    final Integer port = activemq.getMappedPort(61616);
+
+    registry.add("spring.activemq.broker-url", () -> "tcp://%s:%d".formatted(host, port));
+    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", host, port);
+  }
 
   @Order(1)
   @Test

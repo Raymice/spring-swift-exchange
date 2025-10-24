@@ -2,11 +2,11 @@
 package com.raymice.swift.routing.input.mx;
 
 import static com.raymice.swift.utils.IdentifierUtils.getUpdatedFileName;
+import static com.raymice.swift.utils.IdentifierUtils.setFileName;
 
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import java.net.URI;
-import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,7 +42,7 @@ public class PACS_008_001_08Route extends DefaultRoute {
               // Set file name based on header
               String fileName = getUpdatedFileName(exchange);
               // Set file name for output
-              exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+              setFileName(exchange, fileName);
             })
         .to(outputSuccessPath.toString())
         .end();

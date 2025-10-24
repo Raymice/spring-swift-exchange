@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.file.GenericFileMessage;
 import org.apache.camel.impl.event.ExchangeCompletedEvent;
+import org.apache.camel.impl.event.ExchangeSendingEvent;
 import org.apache.camel.impl.event.ExchangeSentEvent;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
@@ -42,13 +43,20 @@ public class AuditEventNotifier extends EventNotifierSupport {
         log.info("✅Exchange completed for route: {} (uuid={})", routeId, uuid);
       }
 
+    } else if (event instanceof ExchangeSendingEvent sendingEvent) {
+      Exchange exchange = sendingEvent.getExchange();
+      String endpointUri = sendingEvent.getEndpoint().getEndpointUri();
+      String uuid = getUuid(exchange);
+
+      log.info("📤 Exchange sending to endpoint: {} (uuid={})", endpointUri, uuid);
+
     } else if (event instanceof ExchangeSentEvent sentEvent) {
       Exchange exchange = sentEvent.getExchange();
       String endpointUri = sentEvent.getEndpoint().getEndpointUri();
       long timeTaken = sentEvent.getTimeTaken();
       String uuid = getUuid(exchange);
 
-      log.info("✅ Exchange sent to endpoint: {} in {} ms (uuid={})", endpointUri, timeTaken, uuid);
+      log.info("✅Exchange sent to endpoint: {} in {} ms (uuid={})", endpointUri, timeTaken, uuid);
     }
   }
 }
