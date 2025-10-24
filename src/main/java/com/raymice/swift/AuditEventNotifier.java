@@ -1,16 +1,26 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift;
 
+import static com.raymice.swift.utils.IdentifierUtils.getJMSMessageId;
+import static com.raymice.swift.utils.IdentifierUtils.getQueueName;
 import static com.raymice.swift.utils.IdentifierUtils.getUuid;
 
+import com.raymice.swift.constant.Global;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.camel.Exchange;
+import org.apache.camel.component.activemq.ActiveMQQueueEndpoint;
+import org.apache.camel.component.file.FileEndpoint;
 import org.apache.camel.component.file.GenericFileMessage;
+import org.apache.camel.component.jms.JmsMessage;
 import org.apache.camel.impl.event.ExchangeCompletedEvent;
+import org.apache.camel.impl.event.ExchangeCreatedEvent;
 import org.apache.camel.impl.event.ExchangeSendingEvent;
 import org.apache.camel.impl.event.ExchangeSentEvent;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
+import org.apache.camel.util.TimeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class AuditEventNotifier extends EventNotifierSupport {
@@ -24,39 +34,86 @@ public class AuditEventNotifier extends EventNotifierSupport {
   }
 
   @Override
-  public void notify(CamelEvent event) throws Exception {
-    if (event instanceof ExchangeCompletedEvent completedEvent) {
-      Exchange exchange = completedEvent.getExchange();
-      String routeId = exchange.getFromRouteId();
-      String fileName = null;
-      String uuid = getUuid(exchange);
+  public void notify(CamelEvent event) {
+    if (event instanceof ExchangeCreatedEvent createdEvent) {
+      final Exchange exchange = createdEvent.getExchange();
+      final String uuid = StringUtils.defaultIfBlank(getUuid(exchange), Global.UNKNOWN);
 
-      if (exchange.getIn() instanceof GenericFileMessage<?> message) {
-        if (message.getGenericFile() != null) {
-          fileName = message.getGenericFile().getFileName();
-        }
-      }
+      if (isInFileExchange(exchange)) {
+        final String path =
+            ((GenericFileMessage<?>) exchange.getIn()).getGenericFile().getAbsoluteFilePath();
+        log.info("📥 Received file (uuid={} path={})", uuid, path);
 
-      if (fileName != null) {
-        log.info("✅Exchange completed for route: {} (uuid={} file='{}')", routeId, uuid, fileName);
-      } else {
-        log.info("✅Exchange completed for route: {} (uuid={})", routeId, uuid);
+      } else if (isInActiveMQExchange(exchange)) {
+        final String queueName = getQueueName(exchange);
+        final String messageId = getJMSMessageId(exchange);
+        log.info(
+            "📥 Received ActiveMQ message (uuid={} queue={} messageId={})",
+            uuid,
+            queueName,
+            messageId);
       }
 
     } else if (event instanceof ExchangeSendingEvent sendingEvent) {
-      Exchange exchange = sendingEvent.getExchange();
-      String endpointUri = sendingEvent.getEndpoint().getEndpointUri();
-      String uuid = getUuid(exchange);
+      final Exchange exchange = sendingEvent.getExchange();
+      final String uuid = getUuid(exchange);
 
-      log.info("📤 Exchange sending to endpoint: {} (uuid={})", endpointUri, uuid);
+      if (isOutFileExchange(sendingEvent)) {
+        final String path = ((FileEndpoint) sendingEvent.getEndpoint()).getFile().getPath();
+        log.info("📤 Sending file (uuid={} path={})", uuid, path);
+
+      } else if (isOutActiveMQExchange(sendingEvent)) {
+        final String queueName =
+            ((ActiveMQQueueEndpoint) sendingEvent.getEndpoint()).getDestinationName();
+        log.info("📤 Sending ActiveMQ message (uuid={} queue={})", uuid, queueName);
+      }
 
     } else if (event instanceof ExchangeSentEvent sentEvent) {
-      Exchange exchange = sentEvent.getExchange();
-      String endpointUri = sentEvent.getEndpoint().getEndpointUri();
-      long timeTaken = sentEvent.getTimeTaken();
-      String uuid = getUuid(exchange);
+      final Exchange exchange = sentEvent.getExchange();
+      final String timeTaken = TimeUtils.printDuration(sentEvent.getTimeTaken(), true);
+      final String uuid = getUuid(exchange);
 
-      log.info("✅Exchange sent to endpoint: {} in {} ms (uuid={})", endpointUri, timeTaken, uuid);
+      if (isOutFileExchange(sentEvent)) {
+        final String path = ((FileEndpoint) sentEvent.getEndpoint()).getFile().getPath();
+        log.info("✔️File sent in {} (uuid={} path={})", timeTaken, uuid, path);
+
+      } else if (isOutActiveMQExchange(sentEvent)) {
+        final String queueName =
+            ((ActiveMQQueueEndpoint) sentEvent.getEndpoint()).getDestinationName();
+        log.info("✔️ActiveMQ message sent in {} (uuid={} queue={})", timeTaken, uuid, queueName);
+      }
+
+    } else if (event instanceof ExchangeCompletedEvent completedEvent) {
+      Exchange exchange = completedEvent.getExchange();
+      String routeId = exchange.getFromRouteId();
+      final String uuid = getUuid(exchange);
+
+      log.info("✅Exchange completed for route: {} (uuid={})", routeId, uuid);
     }
+  }
+
+  private boolean isInFileExchange(Exchange exchange) {
+    return exchange.getIn() instanceof GenericFileMessage<?>;
+  }
+
+  private boolean isInActiveMQExchange(Exchange exchange) {
+    return exchange.getIn() instanceof JmsMessage
+        && ((JmsMessage) exchange.getIn()).getJmsMessage() instanceof ActiveMQMessage;
+  }
+
+  private boolean isOutFileExchange(ExchangeSendingEvent sendingEvent) {
+    return sendingEvent.getEndpoint() instanceof FileEndpoint;
+  }
+
+  private boolean isOutActiveMQExchange(ExchangeSendingEvent sendingEvent) {
+    return sendingEvent.getEndpoint() instanceof ActiveMQQueueEndpoint;
+  }
+
+  private boolean isOutFileExchange(ExchangeSentEvent sentEvent) {
+    return sentEvent.getEndpoint() instanceof FileEndpoint;
+  }
+
+  private boolean isOutActiveMQExchange(ExchangeSentEvent sentEvent) {
+    return sentEvent.getEndpoint() instanceof ActiveMQQueueEndpoint;
   }
 }

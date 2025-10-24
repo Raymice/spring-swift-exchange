@@ -3,6 +3,7 @@ package com.raymice.swift.processor;
 
 import static com.raymice.swift.utils.IdentifierUtils.getUuid;
 
+import com.raymice.swift.constant.Global;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -16,7 +17,7 @@ public class ErrorLogProcessor implements Processor {
   @Override
   public void process(Exchange exchange) {
     final Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
-    String uuid = StringUtils.defaultIfBlank(getUuid(exchange), "unknown");
+    String uuid = StringUtils.defaultIfBlank(getUuid(exchange), Global.UNKNOWN);
 
     log.error("‼️Error processing message: '{}' (uuid={})", exception.getMessage(), uuid);
   }

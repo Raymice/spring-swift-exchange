@@ -1,13 +1,15 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.routing.input.validation;
 
-import static com.raymice.swift.constant.Global.MX_ID;
+import static com.raymice.swift.constant.Global.CUSTOM_HEADER_MX_ID;
 import static com.raymice.swift.constant.Global.PACS_008_001_08;
 import static com.raymice.swift.utils.IdentifierUtils.getQueueName;
 import static com.raymice.swift.utils.IdentifierUtils.getUuid;
+import static com.raymice.swift.utils.IdentifierUtils.setMxId;
 import static com.raymice.swift.utils.ValidatorUtils.isXMLWellFormed;
 
 import com.prowidesoftware.swift.model.MxSwiftMessage;
+import com.raymice.swift.constant.Global;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
@@ -35,7 +37,7 @@ public class ValidateRoute extends DefaultRoute {
         .routeId(getRouteId())
         .process(parsingProcessor)
         .choice()
-        .when(header(MX_ID).isEqualTo(PACS_008_001_08))
+        .when(header(CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
         .log("✅ Message is an ${header.MX_ID} (uuid=${header.UUID})")
         .log("📤 Sending message to PACS.008 queue (uuid=${header.UUID})")
         .to(outputQueueUri) // Forward to next queue
@@ -66,7 +68,7 @@ public class ValidateRoute extends DefaultRoute {
         MxSwiftMessage msg = MxSwiftMessage.parse(xml);
 
         // Set MX_ID header
-        String id = msg.getMxId().id();
-        exchange.getIn().setHeader(MX_ID, StringUtils.isNotBlank(id) ? id : "UNKNOWN");
+        String id = StringUtils.defaultIfBlank(msg.getMxId().id(), Global.UNKNOWN);
+        setMxId(exchange, id);
       };
 }

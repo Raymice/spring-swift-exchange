@@ -1,6 +1,8 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.unit.utils;
 
+import static com.raymice.swift.constant.Global.CUSTOM_HEADER_ORIGINAL_FILE_NAME;
+import static com.raymice.swift.constant.Global.CUSTOM_HEADER_UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -86,7 +88,7 @@ class IdentifierUtilsTest {
     String uuid = UUID.randomUUID().toString();
     IdentifierUtils.setUuid(exchange, uuid);
 
-    assertEquals(uuid, exchange.getIn().getHeader("UUID"));
+    assertEquals(uuid, exchange.getIn().getHeader(CUSTOM_HEADER_UUID));
   }
 
   @Test
@@ -94,7 +96,7 @@ class IdentifierUtilsTest {
     Exchange exchange = new DefaultExchange(new DefaultCamelContext());
     exchange.setIn(new DefaultMessage(exchange));
     String uuid = UUID.randomUUID().toString();
-    exchange.getIn().setHeader("UUID", uuid);
+    IdentifierUtils.setUuid(exchange, uuid);
     String result = IdentifierUtils.getUuid(exchange);
 
     assertEquals(uuid, result);
@@ -107,7 +109,7 @@ class IdentifierUtilsTest {
     String originalFileName = "file.txt";
     IdentifierUtils.setOriginalFileName(exchange, originalFileName);
 
-    assertEquals(originalFileName, exchange.getIn().getHeader("ORIGINAL_FILE_NAME"));
+    assertEquals(originalFileName, exchange.getIn().getHeader(CUSTOM_HEADER_ORIGINAL_FILE_NAME));
   }
 
   @Test
@@ -115,7 +117,7 @@ class IdentifierUtilsTest {
     Exchange exchange = new DefaultExchange(new DefaultCamelContext());
     exchange.setIn(new DefaultMessage(exchange));
     String originalFileName = "file.txt";
-    exchange.getIn().setHeader("ORIGINAL_FILE_NAME", originalFileName);
+    IdentifierUtils.setOriginalFileName(exchange, originalFileName);
     String result = IdentifierUtils.getOriginalFileName(exchange);
 
     assertEquals(originalFileName, result);

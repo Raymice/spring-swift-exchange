@@ -133,7 +133,7 @@ public class End2EndTest {
   }
 
   private boolean hasFileInDirectory(String directoryPath) throws InterruptedException {
-    Thread.sleep(4000); // Wait for 2 seconds to allow Camel route to process the file
+    Thread.sleep(2000); // Wait for 2 seconds to allow Camel route to process the file
 
     Optional<File> resultFileOpt = getFileInDirectory(directoryPath);
     if (resultFileOpt.isEmpty()) {

@@ -2,6 +2,7 @@
 package com.raymice.swift.utils;
 
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_DESTINATION;
+import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_MESSAGE_ID;
 
 import com.raymice.swift.constant.Global;
 import java.util.UUID;
@@ -37,11 +38,11 @@ public class IdentifierUtils {
   }
 
   public static String getUuid(Exchange exchange) throws IllegalArgumentException {
-    return getHeader(exchange, Global.UUID);
+    return getHeader(exchange, Global.CUSTOM_HEADER_UUID);
   }
 
   public static void setUuid(Exchange exchange, String uuid) throws IllegalArgumentException {
-    setHeader(exchange, Global.UUID, uuid);
+    setHeader(exchange, Global.CUSTOM_HEADER_UUID, uuid);
   }
 
   public static String getOriginalFileName(String fileNameWithUuid) throws RuntimeException {
@@ -58,21 +59,21 @@ public class IdentifierUtils {
   }
 
   public static String getOriginalFileName(Exchange exchange) throws IllegalArgumentException {
-    return getHeader(exchange, Global.ORIGINAL_FILE_NAME);
+    return getHeader(exchange, Global.CUSTOM_HEADER_ORIGINAL_FILE_NAME);
   }
 
   public static String getUpdatedFileName(Exchange exchange) throws IllegalArgumentException {
-    return getHeader(exchange, Global.UPDATED_FILE_NAME);
+    return getHeader(exchange, Global.CUSTOM_HEADER_UPDATED_FILE_NAME);
   }
 
   public static void setOriginalFileName(Exchange exchange, String originalFileName)
       throws IllegalArgumentException {
-    setHeader(exchange, Global.ORIGINAL_FILE_NAME, originalFileName);
+    setHeader(exchange, Global.CUSTOM_HEADER_ORIGINAL_FILE_NAME, originalFileName);
   }
 
   public static void setUpdatedFileName(Exchange exchange, String updatedFileName)
       throws IllegalArgumentException {
-    setHeader(exchange, Global.UPDATED_FILE_NAME, updatedFileName);
+    setHeader(exchange, Global.CUSTOM_HEADER_UPDATED_FILE_NAME, updatedFileName);
   }
 
   public static String getFileName(Exchange exchange) throws IllegalArgumentException {
@@ -86,6 +87,14 @@ public class IdentifierUtils {
 
   public static String getQueueName(Exchange exchange) {
     return getHeader(exchange, JMS_HEADER_DESTINATION);
+  }
+
+  public static void setMxId(Exchange exchange, String mxId) throws IllegalArgumentException {
+    setHeader(exchange, Global.CUSTOM_HEADER_MX_ID, mxId);
+  }
+
+  public static String getJMSMessageId(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, JMS_HEADER_MESSAGE_ID);
   }
 
   private static void setHeader(Exchange exchange, String headerName, String headerValue)
