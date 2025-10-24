@@ -22,6 +22,9 @@ public class PACS_008_001_08Route extends DefaultRoute {
             String.format(
                 "file:%s?noop=false", getRoutingConfig().getOutput().getSuccess().getPath()));
 
+    // Call the parent method to apply the shared error handling
+    setupCommonExceptionHandling();
+
     // Take messages from ActiveMQ queue {{app.routing.queue.pacs008}}, validate and route
     // accordingly
     from(inputQueueUri)
@@ -29,13 +32,6 @@ public class PACS_008_001_08Route extends DefaultRoute {
         .log(
             "📥 Receiving pacs.008.001.08 message from ActiveMQ (queue=${header.JMSDestination}"
                 + " uuid=${header.UUID})")
-        .onException(Exception.class)
-        .log(
-            "‼️Error processing message (uuid=${header.UUID}) - ${exception.message} -"
-                + " ${exception.stacktrace}")
-        .to(getErrorEndpoint())
-        .handled(true)
-        .end()
         .log("Need to implement PACS.008.001.08 specific processing here... (uuid=${header.UUID})")
         .process(
             exchange -> {

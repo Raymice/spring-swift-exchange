@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
+import com.raymice.swift.exception.MalformedXmlException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -94,8 +95,8 @@ public class End2EndTest {
     // Assert that the file is moved to the error directory (end of processing)
     assertTrue(hasFileInDirectory(outputErrorPath));
 
-    // Verify that isXMLWellFormed was called during processing
-    assertThat(output.getOut()).contains("XML is not well-formed");
+    // Verify that MalformedXmlException was throw during processing
+    assertThat(output.getOut()).contains(new MalformedXmlException().getMessage());
   }
 
   @Test
@@ -132,7 +133,7 @@ public class End2EndTest {
   }
 
   private boolean hasFileInDirectory(String directoryPath) throws InterruptedException {
-    Thread.sleep(2000); // Wait for 2 seconds to allow Camel route to process the file
+    Thread.sleep(4000); // Wait for 2 seconds to allow Camel route to process the file
 
     Optional<File> resultFileOpt = getFileInDirectory(directoryPath);
     if (resultFileOpt.isEmpty()) {

@@ -6,6 +6,7 @@ import static com.raymice.swift.constant.Global.PACS_008_001_08;
 import static com.raymice.swift.utils.ValidatorUtils.isXMLWellFormed;
 
 import com.prowidesoftware.swift.model.MxSwiftMessage;
+import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,26 +23,22 @@ public class ValidateRoute extends DefaultRoute {
     final String outputQueueUri =
         ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getPacs008());
 
+    // Call the parent method to apply the shared error handling
+    setupCommonExceptionHandling();
+
     // Take messages from ActiveMQ queue {{app.routing.queue.input}}, validate and route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
         .log(
             "🔍 Validating well formed message from ActiveMQ (queue=${header.JMSDestination}"
                 + " uuid=${header.UUID})")
-        .onException(Exception.class)
-        .log(
-            "‼️Error processing message (uuid=${header.UUID}) - ${exception.message} -"
-                + " ${exception.stacktrace}")
-        .to(getErrorEndpoint())
-        .handled(true)
-        .end()
         .process(
             exchange -> {
               String xml = exchange.getIn().getBody(String.class);
 
               // Validate XML well-formed
               if (!isXMLWellFormed(xml)) {
-                throw new RuntimeException("XML is not well formed");
+                throw new MalformedXmlException();
               }
 
               // Check message type (MX)

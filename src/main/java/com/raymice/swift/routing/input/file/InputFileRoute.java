@@ -16,6 +16,7 @@ import com.raymice.swift.utils.ActiveMqUtils;
 import java.net.URI;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -37,19 +38,15 @@ public class InputFileRoute extends DefaultRoute {
     final String outputUnsupportedPath =
         URI.create(String.format("file:%s", output.getUnsupported())).toString();
 
+    // Call the parent method to apply the shared error handling
+    setupCommonExceptionHandling();
+
     // Consumes files from input directory  and sends to ActiveMQ
     from(inputPath.toString())
         .routeId(getRouteId())
-        .onException(Exception.class)
-        .log(
-            "‼️Error processing file: ${file:name} - ${exception.message} -"
-                + " ${exception.stacktrace}")
-        .to(getErrorEndpoint())
-        .handled(true)
-        .end()
         .process(preProcessor)
         .choice()
-        .when(header("CamelFileName").endsWith(".xml"))
+        .when(header(Exchange.FILE_NAME).endsWith(".xml"))
         .process(successProcessor)
         .to(outputQueueUri)
         .otherwise()
@@ -88,6 +85,6 @@ public class InputFileRoute extends DefaultRoute {
       exchange -> {
         final String uuid = getUuid(exchange);
         final String fileName = getOriginalFileName(exchange);
-        log.info("🤷‍♂️ Unsupported file extension: '{}' (uuid={})", fileName, uuid);
+        log.warn("🤷‍♂️ Unsupported file extension: '{}' (uuid={})", fileName, uuid);
       };
 }
