@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.integration.workflow;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
@@ -12,8 +13,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -60,9 +64,9 @@ public class End2EndTest {
   void unsupportedExtension_movesFileToUnsupportedDirectory()
       throws IOException, InterruptedException {
 
-    String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    String outputUnsupportedPath = routingConfig.getOutput().getUnsupported().getPath();
-    String inputFileName = "unsupported.json";
+    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
+    final String outputUnsupportedPath = routingConfig.getOutput().getUnsupported().getPath();
+    final String inputFileName = "unsupported.json";
     final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
 
@@ -71,6 +75,27 @@ public class End2EndTest {
 
     // Assert that the file is moved to the unsupported directory (end of processing)
     assertTrue(hasFileInDirectory(outputUnsupportedPath));
+  }
+
+  @Test
+  @ExtendWith(OutputCaptureExtension.class)
+  void malformedXML_movesFileToErrorDirectory(CapturedOutput output)
+      throws IOException, InterruptedException {
+
+    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
+    final String outputErrorPath = routingConfig.getOutput().getError().getPath();
+    final String inputFileName = "malformed.xml";
+    final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
+    final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
+
+    // Copy of the input file to the input directory will trigger the Camel route
+    copyFile(testFilePath, inputFilePath);
+
+    // Assert that the file is moved to the error directory (end of processing)
+    assertTrue(hasFileInDirectory(outputErrorPath));
+
+    // Verify that isXMLWellFormed was called during processing
+    assertThat(output.getOut()).contains("XML is not well-formed");
   }
 
   @Test
