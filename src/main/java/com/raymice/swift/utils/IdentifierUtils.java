@@ -1,6 +1,8 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.utils;
 
+import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_DESTINATION;
+
 import com.raymice.swift.constant.Global;
 import java.util.UUID;
 import org.apache.camel.Exchange;
@@ -80,6 +82,10 @@ public class IdentifierUtils {
   public static void setFileName(Exchange exchange, String fileName)
       throws IllegalArgumentException {
     setHeader(exchange, Exchange.FILE_NAME, fileName);
+  }
+
+  public static String getQueueName(Exchange exchange) {
+    return getHeader(exchange, JMS_HEADER_DESTINATION);
   }
 
   private static void setHeader(Exchange exchange, String headerName, String headerValue)
