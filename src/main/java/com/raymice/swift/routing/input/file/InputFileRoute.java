@@ -17,11 +17,15 @@ import java.net.URI;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
+import org.apache.camel.component.redis.processor.idempotent.SpringRedisIdempotentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class InputFileRoute extends DefaultRoute {
+
+  @Autowired private SpringRedisIdempotentRepository myRedisIdempotentRepository;
 
   @Override
   public void configure() throws Exception {
@@ -32,7 +36,17 @@ public class InputFileRoute extends DefaultRoute {
     // Define the route to consume files from a directory
     // Noop=false => the original file not remains in the source directory after Camel has processed
     // it.
-    final URI inputPath = URI.create(String.format("file:%s?noop=false", input.getPath()));
+    // readLock=idempotent-changed: This combines the idempotent and changed strategies, providing a
+    // robust read lock that leverages both change detection and an idempotent repository for
+    // clustered scenarios
+
+    // Use a shared Redis-based Idempotent Repository for read lock to prevent multiple instances
+    // processing the same file
+    final URI inputPath =
+        URI.create(
+            String.format(
+                "file:%s?noop=false&readLock=idempotent-changed&idempotentRepository=#myRedisIdempotentRepository",
+                input.getPath()));
     final String outputQueueUri =
         ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getInput());
     final String outputUnsupportedPath =

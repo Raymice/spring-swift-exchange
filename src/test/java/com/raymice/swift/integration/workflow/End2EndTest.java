@@ -40,13 +40,24 @@ public class End2EndTest {
       new GenericContainer<>(DockerImageName.parse("apache/activemq-classic:6.1.7"))
           .withExposedPorts(61616);
 
-  @DynamicPropertySource
-  static void activemqProperties(DynamicPropertyRegistry registry) throws InterruptedException {
-    final String host = activemq.getHost();
-    final Integer port = activemq.getMappedPort(61616);
+  @Container
+  static GenericContainer<?> redis =
+      new GenericContainer<>(DockerImageName.parse("redis:8.2.2")).withExposedPorts(6379);
 
-    registry.add("spring.activemq.broker-url", () -> "tcp://%s:%d".formatted(host, port));
-    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", host, port);
+  @DynamicPropertySource
+  static void updateProperties(DynamicPropertyRegistry registry) throws InterruptedException {
+    final String activemqHost = activemq.getHost();
+    final Integer activemqPort = activemq.getMappedPort(61616);
+    final String redisHost = redis.getHost();
+    final Integer redisPort = redis.getMappedPort(6379);
+
+    registry.add(
+        "spring.activemq.broker-url", () -> "tcp://%s:%d".formatted(activemqHost, activemqPort));
+    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", activemqHost, activemqPort);
+
+    registry.add("spring.redis.host", () -> redisHost);
+    registry.add("spring.redis.port", () -> redisPort);
+    log.info("ℹ️Redis connection updated: {}:{}", redisHost, redisPort);
   }
 
   @BeforeEach
@@ -55,7 +66,6 @@ public class End2EndTest {
     log.info("🧹Cleaning up input and output directories before test");
     cleanDirectories(
         routingConfig.getInput().getPath().toString(),
-        routingConfig.getOutput().getInProgress().getPath(),
         routingConfig.getOutput().getUnsupported().getPath(),
         routingConfig.getOutput().getSuccess().getPath(),
         routingConfig.getOutput().getError().getPath());
