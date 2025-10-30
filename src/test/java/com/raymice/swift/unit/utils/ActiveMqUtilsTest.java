@@ -12,7 +12,7 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ReturnsCorrectUri_ForValidQueueName() {
     String queueName = "orders";
-    String expectedUri = "activemq:queue:orders?testConnectionOnStartup=true";
+    String expectedUri = "activemq:queue:orders?testConnectionOnStartup=true&concurrentConsumers=5";
 
     String result = ActiveMqUtils.getQueueUri(queueName);
     assertEquals(expectedUri, result);
@@ -27,7 +27,8 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ReturnsCorrectUri_ForQueueNameWithSpecialCharacters() {
     String queueName = "order#123";
-    String expectedUri = "activemq:queue:order#123?testConnectionOnStartup=true";
+    String expectedUri =
+        "activemq:queue:order#123?testConnectionOnStartup=true&concurrentConsumers=5";
 
     String result = ActiveMqUtils.getQueueUri(queueName);
 
@@ -43,7 +44,8 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ReturnsCorrectUri_ForQueueNameWithSpaces() {
     String queueName = "order queue";
-    String expectedUri = "activemq:queue:order queue?testConnectionOnStartup=true";
+    String expectedUri =
+        "activemq:queue:order queue?testConnectionOnStartup=true&concurrentConsumers=5";
 
     String result = ActiveMqUtils.getQueueUri(queueName);
     assertEquals(expectedUri, result);
@@ -52,7 +54,7 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ReturnsCorrectUri_ForQueueNameWithUnicodeCharacters() {
     String queueName = "订单";
-    String expectedUri = "activemq:queue:订单?testConnectionOnStartup=true";
+    String expectedUri = "activemq:queue:订单?testConnectionOnStartup=true&concurrentConsumers=5";
 
     String result = ActiveMqUtils.getQueueUri(queueName);
     assertEquals(expectedUri, result);

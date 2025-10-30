@@ -15,7 +15,7 @@ public class RedisConfiguration {
    * Defines the Redis Connection Factory using Lettuce
    * @return the Redis connection factory
    */
-  @Bean
+  @Bean("myRedisConnectionFactory")
   public RedisConnectionFactory redisConnectionFactory() {
     return new LettuceConnectionFactory();
   }

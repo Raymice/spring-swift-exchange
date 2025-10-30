@@ -106,7 +106,8 @@ public class IdentifierUtils {
       throw new IllegalArgumentException("HeaderName name must not be blank", null);
     }
     if (StringUtils.isBlank(headerValue)) {
-      throw new IllegalArgumentException("HeaderValue name must not be blank", null);
+      throw new IllegalArgumentException(
+          "HeaderValue name must not be blank (headerName=%s)".formatted(headerName), null);
     }
 
     exchange.getIn().setHeader(headerName, headerValue);

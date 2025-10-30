@@ -13,6 +13,8 @@ public class ActiveMqUtils {
 
     return UriComponentsBuilder.fromPath(String.format("activemq:queue:%s", queueName))
         .queryParam("testConnectionOnStartup", "true")
+        // TODO add external configuration for concurrentConsumers
+        .queryParam("concurrentConsumers", "5")
         .build()
         .toUriString();
   }

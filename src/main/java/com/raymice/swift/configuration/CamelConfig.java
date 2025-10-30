@@ -2,6 +2,8 @@
 package com.raymice.swift.configuration;
 
 import com.raymice.swift.AuditEventNotifier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.camel.CamelContext;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -23,5 +25,11 @@ public class CamelConfig {
         // Optional: perform actions after CamelContext has started
       }
     };
+  }
+
+  @Bean(destroyMethod = "shutdown", name = "virtualThreadPool")
+  public ExecutorService virtualThreadPool() {
+    // Use virtual threads for lightweight concurrency (Java 21)
+    return Executors.newVirtualThreadPerTaskExecutor();
   }
 }

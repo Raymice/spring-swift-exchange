@@ -6,10 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
 import com.raymice.swift.exception.MalformedXmlException;
+import com.raymice.swift.routing.input.file.InputFileRoute;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.CamelContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +38,7 @@ import org.testcontainers.utility.DockerImageName;
 public class End2EndTest {
 
   @Autowired private RoutingConfig routingConfig;
+  @Autowired private CamelContext camelContext;
 
   @Container
   static GenericContainer<?> activemq =
@@ -123,6 +128,48 @@ public class End2EndTest {
 
     // Assert that the file is moved to the success directory (end of processing)
     assertTrue(hasFileInDirectory(outputSuccessPath));
+  }
+
+  @Test
+  void processBatchOfFiles_movesAllFilesToSuccessDirectory() throws Exception {
+    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
+    final String outputSuccessPath = routingConfig.getOutput().getSuccess().getPath();
+
+    // Stop the route to prepare for batch processing
+    camelContext.getRouteController().stopRoute(InputFileRoute.class.getSimpleName());
+
+    final String testFileName = "pacs.008.001.08.xml";
+    final int iterations = 100;
+    final Duration expectedDuration = Duration.of(8, java.time.temporal.ChronoUnit.SECONDS);
+
+    for (int i = 0; i < iterations; i++) {
+      String testFilePath = "src/test/resources/mx/%s".formatted(testFileName);
+      String inputFilePath = "%s/%d-%s".formatted(inputWorkflowPath, i, testFileName);
+      copyFile(testFilePath, inputFilePath);
+    }
+
+    // Start the route to process the batch of files
+    camelContext.getRouteController().startRoute(InputFileRoute.class.getSimpleName());
+    final LocalDateTime now = LocalDateTime.now();
+
+    // Wait to find all files in the success directory (end of processing)
+    while (countFilesInDirectory(outputSuccessPath) != iterations) {
+      Thread.sleep(10);
+    }
+
+    final Duration totalDuration = Duration.between(now, LocalDateTime.now());
+
+    log.info("⏱ Total time to process {} files: {} seconds", iterations, totalDuration.toSeconds());
+
+    assertTrue(
+        totalDuration.compareTo(expectedDuration) < 0,
+        "Processing time exceeded expected threshold");
+  }
+
+  private int countFilesInDirectory(String directoryPath) {
+    return FileUtils.listFiles(
+            new File(directoryPath), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
+        .size();
   }
 
   private void copyFile(String sourcePath, String destinationPath) throws IOException {
