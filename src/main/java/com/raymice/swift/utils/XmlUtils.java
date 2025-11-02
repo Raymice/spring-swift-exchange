@@ -8,9 +8,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.InputSource;
 
+/**
+ * Utility class for XML operations.
+ */
 @Slf4j
-public class ValidatorUtils {
+public class XmlUtils {
 
+  /**
+   * Checks if the provided XML string is well-formed.
+   *
+   * @param xmlstring the XML string to check
+   * @return true if well-formed, false otherwise
+   */
   public static boolean isXMLWellFormed(String xmlstring) {
 
     if (StringUtils.isBlank(xmlstring)) {
@@ -20,6 +29,7 @@ public class ValidatorUtils {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
+
       // Parsing will fail if not well-formed
       builder.parse(new InputSource(new StringReader(xmlstring)));
       return true;

@@ -1,11 +1,11 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift;
+package com.raymice.swift.event;
 
-import static com.raymice.swift.utils.IdentifierUtils.getJMSMessageId;
-import static com.raymice.swift.utils.IdentifierUtils.getQueueName;
-import static com.raymice.swift.utils.IdentifierUtils.getUuid;
+import static com.raymice.swift.utils.CamelUtils.getJMSMessageId;
+import static com.raymice.swift.utils.CamelUtils.getQueueName;
+import static com.raymice.swift.utils.CamelUtils.getUuid;
 
-import com.raymice.swift.constant.Global;
+import com.raymice.swift.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.camel.Exchange;
@@ -20,7 +20,6 @@ import org.apache.camel.impl.event.ExchangeSentEvent;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
 import org.apache.camel.util.TimeUtils;
-import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class AuditEventNotifier extends EventNotifierSupport {
@@ -37,7 +36,7 @@ public class AuditEventNotifier extends EventNotifierSupport {
   public void notify(CamelEvent event) {
     if (event instanceof ExchangeCreatedEvent createdEvent) {
       final Exchange exchange = createdEvent.getExchange();
-      final String uuid = StringUtils.defaultIfBlank(getUuid(exchange), Global.UNKNOWN);
+      final String uuid = StringUtils.unknownIfBlank(getUuid(exchange));
 
       if (isInFileExchange(exchange)) {
         final String path =

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
 import com.raymice.swift.exception.MalformedXmlException;
-import com.raymice.swift.routing.input.file.InputFileRoute;
+import com.raymice.swift.routing.read.FileRoute;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -136,7 +136,7 @@ public class End2EndTest {
     final String outputSuccessPath = routingConfig.getOutput().getSuccess().getPath();
 
     // Stop the route to prepare for batch processing
-    camelContext.getRouteController().stopRoute(InputFileRoute.class.getSimpleName());
+    camelContext.getRouteController().stopRoute(FileRoute.class.getSimpleName());
 
     final String testFileName = "pacs.008.001.08.xml";
     final int iterations = 100;
@@ -149,7 +149,7 @@ public class End2EndTest {
     }
 
     // Start the route to process the batch of files
-    camelContext.getRouteController().startRoute(InputFileRoute.class.getSimpleName());
+    camelContext.getRouteController().startRoute(FileRoute.class.getSimpleName());
     final LocalDateTime now = LocalDateTime.now();
 
     // Wait to find all files in the success directory (end of processing)

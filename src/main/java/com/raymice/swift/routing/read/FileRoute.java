@@ -1,18 +1,18 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.routing.input.file;
+package com.raymice.swift.routing.read;
 
-import static com.raymice.swift.utils.IdentifierUtils.addUuid;
-import static com.raymice.swift.utils.IdentifierUtils.getFileName;
-import static com.raymice.swift.utils.IdentifierUtils.getOriginalFileName;
-import static com.raymice.swift.utils.IdentifierUtils.getUuid;
-import static com.raymice.swift.utils.IdentifierUtils.setFileName;
-import static com.raymice.swift.utils.IdentifierUtils.setOriginalFileName;
-import static com.raymice.swift.utils.IdentifierUtils.setUpdatedFileName;
-import static com.raymice.swift.utils.IdentifierUtils.setUuid;
+import static com.raymice.swift.utils.CamelUtils.getFileName;
+import static com.raymice.swift.utils.CamelUtils.getOriginalFileName;
+import static com.raymice.swift.utils.CamelUtils.getUuid;
+import static com.raymice.swift.utils.CamelUtils.setFileName;
+import static com.raymice.swift.utils.CamelUtils.setOriginalFileName;
+import static com.raymice.swift.utils.CamelUtils.setUpdatedFileName;
+import static com.raymice.swift.utils.CamelUtils.setUuid;
 
 import com.raymice.swift.configuration.RoutingConfig;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
+import com.raymice.swift.utils.FileUtils;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -24,37 +24,37 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * Route to read files from a directory and process them
+ */
 @Slf4j
 @Component
-public class InputFileRoute extends DefaultRoute {
+public class FileRoute extends DefaultRoute {
 
   @Autowired private SpringRedisIdempotentRepository myRedisIdempotentRepository;
 
   @Autowired
-  @Qualifier("virtualThreadPool")
+  @Qualifier("camelVirtualThreadPool")
   private ExecutorService virtualThreadPool;
 
   @Override
-  public void configure() throws Exception {
+  public void configure() {
 
     final RoutingConfig.Input input = getRoutingConfig().getInput();
     final RoutingConfig.Output output = getRoutingConfig().getOutput();
 
     // Define the route to consume files from a directory
-    // Noop=false => the original file not remains in the source directory after Camel has processed
-    // it.
-    // readLock=idempotent-changed: This combines the idempotent and changed strategies, providing a
-    // robust read lock that leverages both change detection and an idempotent repository for
-    // clustered scenarios
-
-    // Use a shared Redis-based Idempotent Repository for read lock to prevent multiple instances
-    // processing the same file
-
     // TODO externalize read lock parameters
     final String inputPath =
         UriComponentsBuilder.fromPath(String.format("file:%s", input.getPath()))
+            // The original file not remains in the source directory after Camel has processed it.
             .queryParam("noop", "false")
+            // This combines the idempotent and changed strategies, providing a
+            // robust read lock that leverages both change detection and an idempotent repository
+            // for clustered scenarios
             .queryParam("readLock", "idempotent-changed")
+            // Use a shared Redis-based Idempotent Repository for read lock to prevent multiple
+            // instances processing the same file
             .queryParam("idempotentRepository", "#myRedisIdempotentRepository")
             .queryParam("readLockCheckInterval", "10")
             .queryParam("readLockTimeout", "200")
@@ -86,6 +86,10 @@ public class InputFileRoute extends DefaultRoute {
         .end();
   }
 
+  /**
+   * Processor to handle pre-processing of incoming files
+   * - generates UUID, renames file, sets headers
+   */
   private final org.apache.camel.Processor preProcessor =
       exchange -> {
         final UUID uuid = UUID.randomUUID();
@@ -95,7 +99,7 @@ public class InputFileRoute extends DefaultRoute {
         log.info("📥 Receiving file '{}' from: {} (uuid={}})", originalFileName, inputPath, uuid);
 
         // Add UUID to filename to ensure uniqueness
-        final String newFileName = addUuid(originalFileName, uuid);
+        final String newFileName = FileUtils.addUuid(originalFileName, uuid);
         setFileName(exchange, newFileName);
 
         // Set custom headers
@@ -104,6 +108,10 @@ public class InputFileRoute extends DefaultRoute {
         setUuid(exchange, uuid.toString());
       };
 
+  /**
+   * Processor to log successful processing of supported files
+   * - logs file name and UUID
+   */
   private final org.apache.camel.Processor successProcessor =
       exchange -> {
         final String uuid = getUuid(exchange);
@@ -111,6 +119,10 @@ public class InputFileRoute extends DefaultRoute {
         log.info("📤 Sending file to ActiveMQ: '{}' (uuid={})", fileName, uuid);
       };
 
+  /**
+   * Processor to handle unsupported file types
+   * - logs warning with file name and UUID
+   */
   private final org.apache.camel.Processor unsupportedProcessor =
       exchange -> {
         final String uuid = getUuid(exchange);

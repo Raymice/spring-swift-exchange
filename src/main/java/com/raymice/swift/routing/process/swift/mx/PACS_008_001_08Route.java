@@ -1,8 +1,8 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.routing.input.mx;
+package com.raymice.swift.routing.process.swift.mx;
 
-import static com.raymice.swift.utils.IdentifierUtils.getUpdatedFileName;
-import static com.raymice.swift.utils.IdentifierUtils.setFileName;
+import static com.raymice.swift.utils.CamelUtils.getUpdatedFileName;
+import static com.raymice.swift.utils.CamelUtils.setFileName;
 
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;

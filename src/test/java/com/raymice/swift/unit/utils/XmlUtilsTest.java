@@ -4,15 +4,15 @@ package com.raymice.swift.unit.utils;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.raymice.swift.utils.ValidatorUtils;
+import com.raymice.swift.utils.XmlUtils;
 import org.junit.jupiter.api.Test;
 
-class ValidatorUtilsTest {
+class XmlUtilsTest {
 
   @Test
   void isXMLWellFormed_ReturnsTrue_ForValidXML() {
     String validXML = "<root><child>Content</child></root>";
-    boolean result = ValidatorUtils.isXMLWellFormed(validXML);
+    boolean result = XmlUtils.isXMLWellFormed(validXML);
 
     assertTrue(result);
   }
@@ -20,7 +20,7 @@ class ValidatorUtilsTest {
   @Test
   void isXMLWellFormed_ReturnsFalse_ForMalformedXML() {
     String malformedXML = "<root><child>Content</root>";
-    boolean result = ValidatorUtils.isXMLWellFormed(malformedXML);
+    boolean result = XmlUtils.isXMLWellFormed(malformedXML);
 
     assertFalse(result);
   }
@@ -28,7 +28,7 @@ class ValidatorUtilsTest {
   @Test
   void isXMLWellFormed_ReturnsFalse_ForBlankInput() {
     String blankXML = " ";
-    boolean result = ValidatorUtils.isXMLWellFormed(blankXML);
+    boolean result = XmlUtils.isXMLWellFormed(blankXML);
 
     assertFalse(result);
   }
@@ -36,7 +36,7 @@ class ValidatorUtilsTest {
   @Test
   void isXMLWellFormed_ReturnsFalse_ForNullInput() {
     String nullXML = null;
-    boolean result = ValidatorUtils.isXMLWellFormed(nullXML);
+    boolean result = XmlUtils.isXMLWellFormed(nullXML);
 
     assertFalse(result);
   }
@@ -44,7 +44,7 @@ class ValidatorUtilsTest {
   @Test
   void isXMLWellFormed_ReturnsFalse_ForNonXMLContent() {
     String nonXML = "This is not XML.";
-    boolean result = ValidatorUtils.isXMLWellFormed(nonXML);
+    boolean result = XmlUtils.isXMLWellFormed(nonXML);
 
     assertFalse(result);
   }
@@ -53,7 +53,7 @@ class ValidatorUtilsTest {
   void isXMLWellFormed_ReturnsTrue_ForXMLWithNamespaces() {
     String xmlWithNamespaces =
         "<root xmlns:ns=\"http://example.com\"><ns:child>Content</ns:child></root>";
-    boolean result = ValidatorUtils.isXMLWellFormed(xmlWithNamespaces);
+    boolean result = XmlUtils.isXMLWellFormed(xmlWithNamespaces);
 
     assertTrue(result);
   }
@@ -61,7 +61,7 @@ class ValidatorUtilsTest {
   @Test
   void isXMLWellFormed_ReturnsTrue_ForXMLWithSpecialCharacters() {
     String xmlWithSpecialChars = "<root><child>&lt;Content&gt;</child></root>";
-    boolean result = ValidatorUtils.isXMLWellFormed(xmlWithSpecialChars);
+    boolean result = XmlUtils.isXMLWellFormed(xmlWithSpecialChars);
 
     assertTrue(result);
   }

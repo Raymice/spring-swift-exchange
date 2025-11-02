@@ -1,25 +1,24 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.routing.input.validation;
+package com.raymice.swift.routing.validate;
 
-import static com.raymice.swift.constant.Global.CUSTOM_HEADER_MX_ID;
-import static com.raymice.swift.constant.Global.PACS_008_001_08;
-import static com.raymice.swift.utils.IdentifierUtils.getQueueName;
-import static com.raymice.swift.utils.IdentifierUtils.getUuid;
-import static com.raymice.swift.utils.IdentifierUtils.setMxId;
-import static com.raymice.swift.utils.ValidatorUtils.isXMLWellFormed;
+import static com.raymice.swift.constant.Mx.PACS_008_001_08;
+import static com.raymice.swift.utils.CamelUtils.getQueueName;
+import static com.raymice.swift.utils.CamelUtils.getUuid;
+import static com.raymice.swift.utils.CamelUtils.setMxId;
+import static com.raymice.swift.utils.XmlUtils.isXMLWellFormed;
 
 import com.prowidesoftware.swift.model.MxSwiftMessage;
-import com.raymice.swift.constant.Global;
+import com.raymice.swift.constant.Header;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
+import com.raymice.swift.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ValidateRoute extends DefaultRoute {
+public class ValidationRoute extends DefaultRoute {
 
   @Override
   public void configure() throws Exception {
@@ -37,7 +36,7 @@ public class ValidateRoute extends DefaultRoute {
         .routeId(getRouteId())
         .process(parsingProcessor)
         .choice()
-        .when(header(CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
+        .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
         .log("✅ Message is an ${header.MX_ID} (uuid=${header.UUID})")
         .log("📤 Sending message to PACS.008 queue (uuid=${header.UUID})")
         .to(outputQueueUri) // Forward to next queue
@@ -68,7 +67,7 @@ public class ValidateRoute extends DefaultRoute {
         MxSwiftMessage msg = MxSwiftMessage.parse(xml);
 
         // Set MX_ID header
-        String id = StringUtils.defaultIfBlank(msg.getMxId().id(), Global.UNKNOWN);
+        String id = StringUtils.unknownIfBlank(msg.getMxId().id());
         setMxId(exchange, id);
       };
 }
