@@ -19,6 +19,7 @@
         <spotless.version>3.0.0</spotless.version>
         <lombok.version>1.18.42</lombok.version>
         <camel.version>4.14.0</camel.version>
+        <start-class>com.raymice.swift.SwiftApplication</start-class>
 	</properties>
 	<dependencies>
         <dependency>

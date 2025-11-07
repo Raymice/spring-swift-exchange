@@ -17,12 +17,12 @@ public class XmlUtils {
   /**
    * Checks if the provided XML string is well-formed.
    *
-   * @param xmlstring the XML string to check
+   * @param xmlString the XML string to check
    * @return true if well-formed, false otherwise
    */
-  public static boolean isXMLWellFormed(String xmlstring) {
+  public static boolean isXMLWellFormed(String xmlString) {
 
-    if (StringUtils.isBlank(xmlstring)) {
+    if (StringUtils.isBlank(xmlString)) {
       return false;
     }
 
@@ -31,7 +31,7 @@ public class XmlUtils {
       DocumentBuilder builder = factory.newDocumentBuilder();
 
       // Parsing will fail if not well-formed
-      builder.parse(new InputSource(new StringReader(xmlstring)));
+      builder.parse(new InputSource(new StringReader(xmlString)));
       return true;
     } catch (Exception e) {
       log.error("An error occurred: {}", e.getMessage());

@@ -178,7 +178,11 @@ public class End2EndTest {
 
   private void cleanDirectories(String... paths) throws IOException {
     for (String path : paths) {
-      FileUtils.cleanDirectory(new File(path));
+      // Clean only if directory exists
+      File f = new File(path);
+      if (f.isDirectory() && f.exists()) {
+        FileUtils.cleanDirectory(f);
+      }
     }
   }
 
