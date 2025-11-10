@@ -1,14 +1,18 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.routing.process.swift.mx;
 
+import static com.raymice.swift.utils.CamelUtils.getProcessId;
+import static com.raymice.swift.utils.CamelUtils.getQueueName;
 import static com.raymice.swift.utils.CamelUtils.getUpdatedFileName;
 import static com.raymice.swift.utils.CamelUtils.setFileName;
 
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import java.net.URI;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class PACS_008_001_08Route extends DefaultRoute {
 
@@ -29,18 +33,30 @@ public class PACS_008_001_08Route extends DefaultRoute {
     // accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
-        .log(
-            "📥 Receiving pacs.008.001.08 message from ActiveMQ (queue=${header.JMSDestination}"
-                + " uuid=${header.UUID})")
-        .log("Need to implement PACS.008.001.08 specific processing here... (uuid=${header.UUID})")
-        .process(
-            exchange -> {
-              // Set file name based on header
-              String fileName = getUpdatedFileName(exchange);
-              // Set file name for output
-              setFileName(exchange, fileName);
-            })
+        .process(logProcessor)
+        .process(setNameProcessor)
         .to(outputSuccessPath.toString())
         .end();
   }
+
+  private final org.apache.camel.Processor logProcessor =
+      exchange -> {
+        final String processId = getProcessId(exchange);
+        final String queueName = getQueueName(exchange);
+        log.info(
+            "📥 Receiving pacs.008.001.08 message from ActiveMQ (queue={} processId={})",
+            queueName,
+            processId);
+        log.warn(
+            "Need to implement PACS.008.001.08 specific processing here... (processId={}})",
+            processId);
+      };
+
+  private final org.apache.camel.Processor setNameProcessor =
+      exchange -> {
+        // Set file name based on header
+        String fileName = getUpdatedFileName(exchange);
+        // Set file name for output
+        setFileName(exchange, fileName);
+      };
 }

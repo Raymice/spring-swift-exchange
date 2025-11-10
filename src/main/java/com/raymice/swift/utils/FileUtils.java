@@ -3,7 +3,6 @@ package com.raymice.swift.utils;
 
 import static com.raymice.swift.constant.Common.DELIMITER;
 
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -12,40 +11,41 @@ import org.apache.commons.lang3.StringUtils;
 public class FileUtils {
 
   /**
-   * Extract UUID from file name with UUID.
-   * @param fileNameWithUuid the file name containing the UUID
-   * @return the extracted UUID as a string
+   * Extract Process ID from file name with process ID.
+   * @param fileNameWithID the file name containing the UUID
+   * @return the extracted Process ID as a string
    * @throws RuntimeException error during extraction
    */
-  public static String getUuid(String fileNameWithUuid) throws RuntimeException {
-    if (StringUtils.isBlank(fileNameWithUuid)) {
-      throw new IllegalArgumentException("FileNameWithUuid name must not be blank", null);
+  public static String getProcessId(String fileNameWithID) throws RuntimeException {
+    if (StringUtils.isBlank(fileNameWithID)) {
+      throw new IllegalArgumentException("fileNameWithID name must not be blank", null);
     }
 
-    String[] parts = fileNameWithUuid.split("\\" + DELIMITER + "\\" + DELIMITER);
+    String[] parts = fileNameWithID.split("\\" + DELIMITER + "\\" + DELIMITER);
     if (parts.length >= 3) {
       return parts[1];
     } else {
-      throw new RuntimeException("Invalid file name format: " + fileNameWithUuid);
+      throw new RuntimeException("Invalid file name format: " + fileNameWithID);
     }
   }
 
   /**
-   * Add UUID to original file name.
+   * Add processId to original file name.
    * @param originalFileName the original file name
-   * @param uuid the UUID to add
-   * @return the new file name with UUID
+   * @param processId the process ID to include in the file name
+   * @return the new file name with process ID
    * @throws IllegalArgumentException error during addition
    */
-  public static String addUuid(String originalFileName, UUID uuid) throws IllegalArgumentException {
+  public static String addProcessId(String originalFileName, Long processId)
+      throws IllegalArgumentException {
     if (StringUtils.isBlank(originalFileName)) {
       throw new IllegalArgumentException("OriginalFileName name must not be blank", null);
     }
-    if (uuid == null) {
-      throw new IllegalArgumentException("Uuid name must not be null", null);
+    if (processId == null) {
+      throw new IllegalArgumentException("ProcessId name must not be null", null);
     }
 
-    return DELIMITER + DELIMITER + uuid + DELIMITER + DELIMITER + originalFileName;
+    return DELIMITER + DELIMITER + processId + DELIMITER + DELIMITER + originalFileName;
   }
 
   /**

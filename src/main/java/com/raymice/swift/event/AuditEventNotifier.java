@@ -2,8 +2,8 @@
 package com.raymice.swift.event;
 
 import static com.raymice.swift.utils.CamelUtils.getJMSMessageId;
+import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.getQueueName;
-import static com.raymice.swift.utils.CamelUtils.getUuid;
 
 import com.raymice.swift.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -36,58 +36,62 @@ public class AuditEventNotifier extends EventNotifierSupport {
   public void notify(CamelEvent event) {
     if (event instanceof ExchangeCreatedEvent createdEvent) {
       final Exchange exchange = createdEvent.getExchange();
-      final String uuid = StringUtils.unknownIfBlank(getUuid(exchange));
+      final String processId = StringUtils.unknownIfBlank(getProcessId(exchange));
 
       if (isInFileExchange(exchange)) {
         final String path =
             ((GenericFileMessage<?>) exchange.getIn()).getGenericFile().getAbsoluteFilePath();
-        log.info("📥 Received file (uuid={} path={})", uuid, path);
+        log.debug("📥 Received file (processId={} path={})", processId, path);
 
       } else if (isInActiveMQExchange(exchange)) {
         final String queueName = getQueueName(exchange);
         final String messageId = getJMSMessageId(exchange);
-        log.info(
-            "📥 Received ActiveMQ message (uuid={} queue={} messageId={})",
-            uuid,
+        log.debug(
+            "📥 Received ActiveMQ message (processId={} queue={} messageId={})",
+            processId,
             queueName,
             messageId);
       }
 
     } else if (event instanceof ExchangeSendingEvent sendingEvent) {
       final Exchange exchange = sendingEvent.getExchange();
-      final String uuid = getUuid(exchange);
+      final String processId = getProcessId(exchange);
 
       if (isOutFileExchange(sendingEvent)) {
         final String path = ((FileEndpoint) sendingEvent.getEndpoint()).getFile().getPath();
-        log.info("📤 Sending file (uuid={} path={})", uuid, path);
+        log.debug("📤 Sending file (processId={} path={})", processId, path);
 
       } else if (isOutActiveMQExchange(sendingEvent)) {
         final String queueName =
             ((ActiveMQQueueEndpoint) sendingEvent.getEndpoint()).getDestinationName();
-        log.info("📤 Sending ActiveMQ message (uuid={} queue={})", uuid, queueName);
+        log.debug("📤 Sending ActiveMQ message (processId={} queue={})", processId, queueName);
       }
 
     } else if (event instanceof ExchangeSentEvent sentEvent) {
       final Exchange exchange = sentEvent.getExchange();
       final String timeTaken = TimeUtils.printDuration(sentEvent.getTimeTaken(), true);
-      final String uuid = getUuid(exchange);
+      final String processId = getProcessId(exchange);
 
       if (isOutFileExchange(sentEvent)) {
         final String path = ((FileEndpoint) sentEvent.getEndpoint()).getFile().getPath();
-        log.info("✔️File sent in {} (uuid={} path={})", timeTaken, uuid, path);
+        log.debug("✔️File sent in {} (processId={} path={})", timeTaken, processId, path);
 
       } else if (isOutActiveMQExchange(sentEvent)) {
         final String queueName =
             ((ActiveMQQueueEndpoint) sentEvent.getEndpoint()).getDestinationName();
-        log.info("✔️ActiveMQ message sent in {} (uuid={} queue={})", timeTaken, uuid, queueName);
+        log.debug(
+            "✔️ActiveMQ message sent in {} (processId={} queue={})",
+            timeTaken,
+            processId,
+            queueName);
       }
 
     } else if (event instanceof ExchangeCompletedEvent completedEvent) {
       Exchange exchange = completedEvent.getExchange();
       String routeId = exchange.getFromRouteId();
-      final String uuid = getUuid(exchange);
+      final String processId = getProcessId(exchange);
 
-      log.info("✅Exchange completed for route: {} (uuid={})", routeId, uuid);
+      log.debug("✅Exchange completed for route: {} (processId={})", routeId, processId);
     }
   }
 

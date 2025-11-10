@@ -2,14 +2,18 @@
 package com.raymice.swift.routing.validate;
 
 import static com.raymice.swift.constant.Mx.PACS_008_001_08;
+import static com.raymice.swift.utils.CamelUtils.getMxId;
+import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.getQueueName;
-import static com.raymice.swift.utils.CamelUtils.getUuid;
 import static com.raymice.swift.utils.CamelUtils.setMxId;
 import static com.raymice.swift.utils.XmlUtils.isXMLWellFormed;
 
 import com.prowidesoftware.swift.model.MxSwiftMessage;
 import com.raymice.swift.constant.Header;
+import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.exception.MalformedXmlException;
+import com.raymice.swift.exception.UnsupportedException;
+import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import com.raymice.swift.utils.StringUtils;
@@ -37,22 +41,44 @@ public class ValidationRoute extends DefaultRoute {
         .process(parsingProcessor)
         .choice()
         .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
-        .log("✅ Message is an ${header.MX_ID} (uuid=${header.UUID})")
-        .log("📤 Sending message to PACS.008 queue (uuid=${header.UUID})")
+        .process(logProcessor)
+        .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.VALIDATED))
         .to(outputQueueUri) // Forward to next queue
         .otherwise()
-        .log("❌ Message is not supported type='${header.MX_ID}' (uuid=${header.UUID})")
-        .to(getErrorEndpoint())
+        .process(unsupportedProcessor)
         .endChoice()
         .end();
   }
 
+  private final org.apache.camel.Processor unsupportedProcessor =
+      exchange -> {
+        final String mxID = getMxId(exchange);
+        throw new UnsupportedException(String.format("Message is not a supported type='%s'", mxID));
+      };
+
+  private final org.apache.camel.Processor logProcessor =
+      exchange -> {
+        final String processId = getProcessId(exchange);
+        final String mxID = getMxId(exchange);
+        log.info("✅ Message is an {} (processId={})", mxID, processId);
+        log.info("📤 Sending message to PACS.008 queue (processId={})", processId);
+      };
+
+  private final org.apache.camel.Processor logUnsupported =
+      exchange -> {
+        final String processId = getProcessId(exchange);
+        final String mxID = getMxId(exchange);
+        log.warn("❌ Message is not supported type='{}' (processId={})", mxID, processId);
+      };
+
   private final org.apache.camel.Processor parsingProcessor =
       exchange -> {
-        final String uuid = getUuid(exchange);
+        final String processId = getProcessId(exchange);
         final String queueName = getQueueName(exchange);
         log.info(
-            "🔍 Validating well formed message from ActiveMQ (uuid={}, queue={})", uuid, queueName);
+            "🔍 Validating well formed message from ActiveMQ (processId={}, queue={})",
+            processId,
+            queueName);
 
         String xml = exchange.getIn().getBody(String.class);
 
@@ -67,7 +93,7 @@ public class ValidationRoute extends DefaultRoute {
         MxSwiftMessage msg = MxSwiftMessage.parse(xml);
 
         // Set MX_ID header
-        String id = StringUtils.unknownIfBlank(msg.getMxId().id());
-        setMxId(exchange, id);
+        String mxId = StringUtils.unknownIfBlank(msg.getMxId().id());
+        setMxId(exchange, mxId);
       };
 }

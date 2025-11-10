@@ -11,45 +11,46 @@ import org.junit.jupiter.api.Test;
 public class FileUtilsTest {
 
   @Test
-  void addUuid_ReturnsCorrectFormat_ForValidInputs() {
+  void addProcessId_ReturnsCorrectFormat_ForValidInputs() {
     String originalFileName = "file.txt";
-    UUID uuid = UUID.randomUUID();
-    String expected = "$$" + uuid + "$$" + originalFileName;
-    String result = FileUtils.addUuid(originalFileName, uuid);
+    Long processId = Long.MAX_VALUE;
+    String expected = "$$" + processId + "$$" + originalFileName;
+    String result = FileUtils.addProcessId(originalFileName, processId);
 
     assertEquals(expected, result);
   }
 
   @Test
-  void addUuid_ThrowsException_ForBlankFileName() {
-    UUID uuid = UUID.randomUUID();
-    assertThrows(IllegalArgumentException.class, () -> FileUtils.addUuid(" ", uuid));
+  void addProcessId_ThrowsException_ForBlankFileName() {
+    Long processId = Long.MAX_VALUE;
+    assertThrows(IllegalArgumentException.class, () -> FileUtils.addProcessId(" ", processId));
   }
 
   @Test
-  void addUuid_ThrowsException_ForNullUuid() {
+  void addProcessId_ThrowsException_ForNullUuid() {
     String originalFileName = "file.txt";
-    assertThrows(IllegalArgumentException.class, () -> FileUtils.addUuid(originalFileName, null));
+    assertThrows(
+        IllegalArgumentException.class, () -> FileUtils.addProcessId(originalFileName, null));
   }
 
   @Test
-  void getUuid_ReturnsUuid_ForValidFileName() {
-    UUID uuid = UUID.randomUUID();
-    String fileNameWithUuid = "$$" + uuid + "$$file.txt";
-    String result = FileUtils.getUuid(fileNameWithUuid);
+  void getProcessId_ReturnsUuid_ForValidFileName() {
+    Long processId = Long.MAX_VALUE;
+    String fileNameWithID = "$$" + processId + "$$file.txt";
+    String result = FileUtils.getProcessId(fileNameWithID);
 
-    assertEquals(uuid.toString(), result);
+    assertEquals(String.valueOf(processId), result);
   }
 
   @Test
-  void getUuid_ThrowsException_ForInvalidFileNameFormat() {
+  void getProcessId_ThrowsException_ForInvalidFileNameFormat() {
     String invalidFileName = "file.txt";
-    assertThrows(RuntimeException.class, () -> FileUtils.getUuid(invalidFileName));
+    assertThrows(RuntimeException.class, () -> FileUtils.getProcessId(invalidFileName));
   }
 
   @Test
-  void getUuid_ThrowsException_ForBlankFileName() {
-    assertThrows(IllegalArgumentException.class, () -> FileUtils.getUuid(" "));
+  void getProcessId_ThrowsException_ForBlankFileName() {
+    assertThrows(IllegalArgumentException.class, () -> FileUtils.getProcessId(" "));
   }
 
   @Test

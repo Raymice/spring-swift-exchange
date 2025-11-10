@@ -2,7 +2,11 @@
 package com.raymice.swift.routing;
 
 import com.raymice.swift.configuration.RoutingConfig;
-import com.raymice.swift.processor.ErrorLogProcessor;
+import com.raymice.swift.db.sevice.ProcessService;
+import com.raymice.swift.exception.UnsupportedException;
+import com.raymice.swift.exception.WorkflowStatusException;
+import com.raymice.swift.processor.ErrorProcessor;
+import com.raymice.swift.processor.UnsupportedProcessor;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import lombok.Data;
@@ -16,23 +20,33 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class DefaultRoute extends RouteBuilder {
 
+  @Autowired private ProcessService processService;
   @Autowired private RoutingConfig routingConfig;
   private final String routeId;
   private String errorEndpoint;
-  private final ErrorLogProcessor errorLogProcessor;
+  private String unsupportedEndpoint;
 
   public DefaultRoute() {
     this.routeId = this.getClass().getSimpleName();
-    this.errorLogProcessor = new ErrorLogProcessor();
   }
 
   @PostConstruct
   void postConstruct() {
     this.errorEndpoint =
         URI.create(String.format("file:%s", routingConfig.getOutput().getError())).toString();
+    this.unsupportedEndpoint =
+        URI.create(String.format("file:%s", routingConfig.getOutput().getUnsupported())).toString();
   }
 
-  protected void setupCommonExceptionHandling() {
-    onException(Exception.class).handled(true).process(new ErrorLogProcessor()).to(errorEndpoint);
+  public void setupCommonExceptionHandling() {
+    onException(UnsupportedException.class)
+        .handled(true)
+        .process(new UnsupportedProcessor(processService))
+        .to(unsupportedEndpoint);
+
+    onException(WorkflowStatusException.class, Exception.class)
+        .handled(true)
+        .process(new ErrorProcessor(processService))
+        .to(errorEndpoint);
   }
 }

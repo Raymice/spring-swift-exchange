@@ -5,6 +5,7 @@ import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_DESTINATION
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_MESSAGE_ID;
 
 import com.raymice.swift.constant.Header;
+import com.raymice.swift.db.entity.ProcessEntity;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.zip.CRC32;
@@ -39,23 +40,24 @@ public class CamelUtils {
   }
 
   /**
-   * Get UUID from Camel Exchange header.
+   * Get process ID from Camel Exchange header.
    * @param exchange Camel Exchange
-   * @return UUID
+   * @return process ID
    * @throws IllegalArgumentException error
    */
-  public static String getUuid(Exchange exchange) throws IllegalArgumentException {
-    return getHeader(exchange, Header.CUSTOM_HEADER_UUID);
+  public static String getProcessId(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, Header.CUSTOM_HEADER_PROCESS_ID);
   }
 
   /**
-   * Set UUID in Camel Exchange header.
+   * Set process ID in Camel Exchange header.
    * @param exchange Camel Exchange
-   * @param uuid UUID
+   * @param processId process ID
    * @throws IllegalArgumentException error
    */
-  public static void setUuid(Exchange exchange, String uuid) throws IllegalArgumentException {
-    setHeader(exchange, Header.CUSTOM_HEADER_UUID, uuid);
+  public static void setProcessId(Exchange exchange, Long processId)
+      throws IllegalArgumentException {
+    setHeader(exchange, Header.CUSTOM_HEADER_PROCESS_ID, String.valueOf(processId));
   }
 
   /**
@@ -142,6 +144,16 @@ public class CamelUtils {
   }
 
   /**
+   * Get MX ID from Camel Exchange header.
+   * @param exchange Camel Exchange
+   * @return MX ID
+   * @throws IllegalArgumentException error
+   */
+  public static String getMxId(Exchange exchange) throws IllegalArgumentException {
+    return getHeader(exchange, Header.CUSTOM_HEADER_MX_ID);
+  }
+
+  /**
    * Get JMS Message ID from Camel Exchange header.
    * @param exchange Camel Exchange
    * @return JMS Message ID
@@ -149,6 +161,27 @@ public class CamelUtils {
    */
   public static String getJMSMessageId(Exchange exchange) throws IllegalArgumentException {
     return getHeader(exchange, JMS_HEADER_MESSAGE_ID);
+  }
+
+  /**
+   * Get Status from Camel Exchange header.
+   * @param exchange Camel Exchange
+   * @return Status
+   * @throws IllegalArgumentException
+   */
+  public static ProcessEntity.Status getStatus(Exchange exchange) throws IllegalArgumentException {
+    return ProcessEntity.Status.valueOf(getHeader(exchange, Header.CUSTOM_HEADER_STATUS));
+  }
+
+  /**
+   * Set Status in Camel Exchange header.
+   * @param exchange Camel Exchange
+   * @param status Status
+   * @throws IllegalArgumentException
+   */
+  public static void setStatus(Exchange exchange, ProcessEntity.Status status)
+      throws IllegalArgumentException {
+    setHeader(exchange, Header.CUSTOM_HEADER_STATUS, status.name());
   }
 
   /**

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.raymice.swift.constant.Header;
 import com.raymice.swift.utils.CamelUtils;
-import java.util.UUID;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
@@ -15,24 +14,25 @@ import org.junit.jupiter.api.Test;
 class CamelUtilsTest {
 
   @Test
-  void setUuid_SetsHeaderCorrectly() {
+  void setProcessId_SetsHeaderCorrectly() {
     Exchange exchange = new DefaultExchange(new DefaultCamelContext());
     exchange.setIn(new DefaultMessage(exchange));
-    String uuid = UUID.randomUUID().toString();
-    CamelUtils.setUuid(exchange, uuid);
+    Long processId = Long.MAX_VALUE;
+    CamelUtils.setProcessId(exchange, processId);
 
-    assertEquals(uuid, exchange.getIn().getHeader(Header.CUSTOM_HEADER_UUID));
+    assertEquals(
+        String.valueOf(processId), exchange.getIn().getHeader(Header.CUSTOM_HEADER_PROCESS_ID));
   }
 
   @Test
-  void getUuid_ReturnsHeaderValue() {
+  void getProcessId_ReturnsHeaderValue() {
     Exchange exchange = new DefaultExchange(new DefaultCamelContext());
     exchange.setIn(new DefaultMessage(exchange));
-    String uuid = UUID.randomUUID().toString();
-    CamelUtils.setUuid(exchange, uuid);
-    String result = CamelUtils.getUuid(exchange);
+    Long processId = Long.MAX_VALUE;
+    CamelUtils.setProcessId(exchange, processId);
+    String result = CamelUtils.getProcessId(exchange);
 
-    assertEquals(uuid, result);
+    assertEquals(String.valueOf(processId), result);
   }
 
   @Test
