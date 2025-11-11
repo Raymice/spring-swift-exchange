@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
 import com.raymice.swift.exception.MalformedXmlException;
+import com.raymice.swift.integration.Containers;
 import com.raymice.swift.routing.read.FileRoute;
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import org.apache.camel.CamelContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,71 +27,22 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 @Testcontainers
 @SpringBootTest()
 @ActiveProfiles("test")
-@Disabled
 public class End2EndTest {
 
   @Autowired private RoutingConfig routingConfig;
   @Autowired private CamelContext camelContext;
-
-  private static final String pgDatabase = "swiftdb";
-  private static final String pgUser = "testuser";
-  private static final String pgPassword = "testpassword";
-
-  @Container
-  static GenericContainer<?> activemq =
-      new GenericContainer<>(DockerImageName.parse("apache/activemq-classic:6.1.7"))
-          .withExposedPorts(61616);
-
-  @Container
-  static GenericContainer<?> redis =
-      new GenericContainer<>(DockerImageName.parse("redis:8.2.2")).withExposedPorts(6379);
-
-  @Container
-  static GenericContainer<?> postgres =
-      new GenericContainer<>(DockerImageName.parse("postgres:15-alpine"))
-          .withExposedPorts(5432)
-          .withEnv("POSTGRES_DB", pgDatabase) // Set database name
-          .withEnv("POSTGRES_USER", pgUser)
-          .withEnv("POSTGRES_PASSWORD", pgPassword);
-
-  ;
+  @Container private static final Containers containers = new Containers();
 
   @DynamicPropertySource
-  static void updateProperties(DynamicPropertyRegistry registry) throws InterruptedException {
-    final String activemqHost = activemq.getHost();
-    final Integer activemqPort = activemq.getMappedPort(61616);
-    final String redisHost = redis.getHost();
-    final Integer redisPort = redis.getMappedPort(6379);
-    final String postgresHost = postgres.getHost();
-    final Integer postgresPort = postgres.getMappedPort(5432);
-
-    registry.add(
-        "spring.activemq.broker-url", () -> "tcp://%s:%d".formatted(activemqHost, activemqPort));
-    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", activemqHost, activemqPort);
-
-    registry.add("spring.redis.url", () -> redisHost);
-    registry.add("spring.redis.port", () -> redisPort);
-    log.info("ℹ️Redis connection updated: {}:{}", redisHost, redisPort);
-
-    registry.add(
-        "spring.datasource.url",
-        () -> "jdbc:postgresql://%s:%d/%s".formatted(postgresHost, postgresPort, pgDatabase));
-    registry.add("spring.datasource.username", () -> pgUser);
-    registry.add("spring.datasource.password", () -> pgPassword);
-    log.info(
-        "ℹ️Postgres connection updated: jdbc:postgresql://{}:{}/{}}",
-        postgresHost,
-        postgresPort,
-        pgDatabase);
+  static void dynamicProperties(DynamicPropertyRegistry registry) {
+    containers.applyDynamicProperties(registry);
   }
 
   @BeforeEach

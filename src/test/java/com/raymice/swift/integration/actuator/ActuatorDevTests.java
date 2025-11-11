@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.raymice.swift.integration.Containers;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,35 +16,25 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("dev")
 @Testcontainers
 @AutoConfigureMockMvc
-@Disabled
 class ActuatorDevTests {
 
   private final String path = "/actuator";
 
   @Autowired private MockMvc mockMvc;
 
-  @Container
-  static GenericContainer<?> activemq =
-      new GenericContainer<>(DockerImageName.parse("apache/activemq-classic:6.1.7"))
-          .withExposedPorts(61616);
+  @Container private static final Containers containers = new Containers();
 
   @DynamicPropertySource
-  static void activemqProperties(DynamicPropertyRegistry registry) throws InterruptedException {
-    final String host = activemq.getHost();
-    final Integer port = activemq.getMappedPort(61616);
-
-    registry.add("spring.activemq.broker-url", () -> "tcp://%s:%d".formatted(host, port));
-    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", host, port);
+  static void dynamicProperties(DynamicPropertyRegistry registry) {
+    containers.applyDynamicProperties(registry);
   }
 
   @Order(1)
