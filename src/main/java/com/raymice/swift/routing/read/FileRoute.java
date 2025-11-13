@@ -13,6 +13,7 @@ import static com.raymice.swift.utils.CamelUtils.setUpdatedFileName;
 import com.raymice.swift.configuration.RoutingConfig;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
+import com.raymice.swift.exception.UnsupportedException;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import com.raymice.swift.utils.FileUtils;
@@ -85,7 +86,6 @@ public class FileRoute extends DefaultRoute {
         .to(outputQueueUri)
         .otherwise()
         .process(unsupportedProcessor)
-        .to(outputUnsupportedPath)
         .endChoice()
         .end();
   }
@@ -141,8 +141,8 @@ public class FileRoute extends DefaultRoute {
    */
   private final org.apache.camel.Processor unsupportedProcessor =
       exchange -> {
-        final String processId = getProcessId(exchange);
         final String fileName = getOriginalFileName(exchange);
-        log.warn("🤷‍♂️ Unsupported file extension: '{}' (processId={})", fileName, processId);
+        throw new UnsupportedException(
+            String.format("🤷‍♂️ Unsupported file extension: '%s'", fileName));
       };
 }

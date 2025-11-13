@@ -6,6 +6,8 @@ import static com.raymice.swift.utils.CamelUtils.getQueueName;
 import static com.raymice.swift.utils.CamelUtils.getUpdatedFileName;
 import static com.raymice.swift.utils.CamelUtils.setFileName;
 
+import com.raymice.swift.db.entity.ProcessEntity;
+import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import java.net.URI;
@@ -35,6 +37,7 @@ public class PACS_008_001_08Route extends DefaultRoute {
         .routeId(getRouteId())
         .process(logProcessor)
         .process(setNameProcessor)
+        .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.COMPLETED))
         .to(outputSuccessPath.toString())
         .end();
   }
