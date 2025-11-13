@@ -2,9 +2,12 @@
 package com.raymice.swift.integration.workflow;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.raymice.swift.configuration.RoutingConfig;
+import com.raymice.swift.db.entity.ProcessEntity;
+import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.integration.Containers;
 import com.raymice.swift.routing.read.FileRoute;
@@ -12,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
@@ -38,6 +42,7 @@ public class End2EndTest {
 
   @Autowired private RoutingConfig routingConfig;
   @Autowired private CamelContext camelContext;
+  @Autowired private ProcessService processService;
   @Container private static final Containers containers = new Containers();
 
   @DynamicPropertySource
@@ -54,6 +59,9 @@ public class End2EndTest {
         routingConfig.getOutput().getUnsupported().getPath(),
         routingConfig.getOutput().getSuccess().getPath(),
         routingConfig.getOutput().getError().getPath());
+
+    log.info("Cleaning DB before test");
+    processService.deleteAll();
   }
 
   @Test
@@ -70,7 +78,10 @@ public class End2EndTest {
     copyFile(testFilePath, inputFilePath);
 
     // Assert that the file is moved to the unsupported directory (end of processing)
-    assertTrue(hasFileInDirectory(outputUnsupportedPath));
+    assertTrue(hasFileInDirectory(outputUnsupportedPath, 1));
+
+    // Assert the process status is set to UNSUPPORTED in database
+    assertStatusInDatabase(ProcessEntity.Status.UNSUPPORTED, 1);
   }
 
   @Test
@@ -88,10 +99,13 @@ public class End2EndTest {
     copyFile(testFilePath, inputFilePath);
 
     // Assert that the file is moved to the error directory (end of processing)
-    assertTrue(hasFileInDirectory(outputErrorPath));
+    assertTrue(hasFileInDirectory(outputErrorPath, 1));
 
     // Verify that MalformedXmlException was throw during processing
     assertThat(output.getOut()).contains(new MalformedXmlException().getMessage());
+
+    // Assert the process status is set to FAILED in database
+    assertStatusInDatabase(ProcessEntity.Status.FAILED, 1);
   }
 
   @Test
@@ -107,7 +121,10 @@ public class End2EndTest {
     copyFile(testFilePath, inputFilePath);
 
     // Assert that the file is moved to the success directory (end of processing)
-    assertTrue(hasFileInDirectory(outputSuccessPath));
+    assertTrue(hasFileInDirectory(outputSuccessPath, 1));
+
+    // Assert the process status is set to COMPLETED in database
+    assertStatusInDatabase(ProcessEntity.Status.COMPLETED, 1);
   }
 
   @Test
@@ -133,9 +150,7 @@ public class End2EndTest {
     final LocalDateTime now = LocalDateTime.now();
 
     // Wait to find all files in the success directory (end of processing)
-    while (countFilesInDirectory(outputSuccessPath) != iterations) {
-      Thread.sleep(10);
-    }
+    assertTrue(hasFileInDirectory(outputSuccessPath, iterations));
 
     final Duration totalDuration = Duration.between(now, LocalDateTime.now());
 
@@ -144,6 +159,17 @@ public class End2EndTest {
     assertTrue(
         totalDuration.compareTo(expectedDuration) < 0,
         "Processing time exceeded expected threshold");
+
+    // Assert the process status is set to COMPLETED in database
+    assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
+  }
+
+  private void assertStatusInDatabase(ProcessEntity.Status expectedStatus, int expectedCount) {
+    List<ProcessEntity> processEntities = processService.findAll();
+    assertEquals(expectedCount, processEntities.size());
+    for (ProcessEntity entity : processEntities) {
+      assertEquals(expectedStatus, entity.getStatus());
+    }
   }
 
   private int countFilesInDirectory(String directoryPath) {
@@ -173,8 +199,18 @@ public class End2EndTest {
         .findFirst();
   }
 
-  private boolean hasFileInDirectory(String directoryPath) throws InterruptedException {
-    Thread.sleep(2000); // Wait for 2 seconds to allow Camel route to process the file
+  private boolean hasFileInDirectory(String directoryPath, int expectedCount)
+      throws InterruptedException {
+    LocalDateTime startTime = LocalDateTime.now();
+    while (countFilesInDirectory(directoryPath) != expectedCount) {
+      if (Duration.between(startTime, LocalDateTime.now()).toSeconds() > expectedCount * 1.2) {
+        log.error("⏱ Timeout waiting for file in directory: {}", directoryPath);
+        return false;
+      }
+
+      // Wait to prevent high CPU usage
+      Thread.sleep(10);
+    }
 
     Optional<File> resultFileOpt = getFileInDirectory(directoryPath);
     if (resultFileOpt.isEmpty()) {

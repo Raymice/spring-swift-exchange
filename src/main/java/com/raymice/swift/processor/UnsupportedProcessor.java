@@ -5,6 +5,7 @@ import static com.raymice.swift.utils.CamelUtils.getProcessId;
 
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
+import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class UnsupportedProcessor implements Processor {
   private ProcessService processService;
 
   @Override
-  public void process(Exchange exchange) {
+  public void process(Exchange exchange) throws WorkflowStatusException {
     final Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
     final String processId = StringUtils.unknownIfBlank(getProcessId(exchange));
 
