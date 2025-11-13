@@ -164,6 +164,26 @@ public class End2EndTest {
     assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
   }
 
+  @Test
+  void processUnsupportedMxFileType_movesFileToUnsupportedDirectory()
+      throws IOException, InterruptedException {
+
+    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
+    final String outputUnsupportedPath = routingConfig.getOutput().getUnsupported().getPath();
+    final String inputFileName = "pacs.unsupported-type.xml";
+    final String testFilePath = "src/test/resources/mx/%s".formatted(inputFileName);
+    final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
+
+    // Copy of the input file to the input directory will trigger the Camel route
+    copyFile(testFilePath, inputFilePath);
+
+    // Assert that the file is moved to the unsupported directory (end of processing)
+    assertTrue(hasFileInDirectory(outputUnsupportedPath, 1));
+
+    // Assert the process status is set to UNSUPPORTED in database
+    assertStatusInDatabase(ProcessEntity.Status.UNSUPPORTED, 1);
+  }
+
   private void assertStatusInDatabase(ProcessEntity.Status expectedStatus, int expectedCount) {
     List<ProcessEntity> processEntities = processService.findAll();
     assertEquals(expectedCount, processEntities.size());

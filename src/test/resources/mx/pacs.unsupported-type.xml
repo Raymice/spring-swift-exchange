@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+    <FIToFIPmtStsRpt>
+        <GrpHdr>
+            <MsgId>MSGID-PACS002-20251110-001</MsgId>
+            <CreDtTm>2025-11-10T10:30:00Z</CreDtTm>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BANKAABB</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BANKCCDD</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+        </GrpHdr>
+        <OrgnlGrpInfAndSts>
+            <OrgnlMsgId>ORIGINALMSGID-PACS008-20251110-001</OrgnlMsgId>
+            <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+            <OrgnlCreDtTm>2025-11-10T10:00:00Z</OrgnlCreDtTm>
+            <GrpSts>RJCT</GrpSts>
+        </OrgnlGrpInfAndSts>
+        <TxInfAndSts>
+            <OrgnlEndToEndId>E2EID-PAYMENT-001</OrgnlEndToEndId>
+            <TxSts>RJCT</TxSts>
+            <StsRsnInf>
+                <Rsn>
+                    <Cd>AC04</Cd>
+                </Rsn>
+                <AddtlInf>Account closed</AddtlInf>
+            </StsRsnInf>
+        </TxInfAndSts>
+    </FIToFIPmtStsRpt>
+</Document>

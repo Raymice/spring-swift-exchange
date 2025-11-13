@@ -30,7 +30,7 @@ class ActuatorDevTests {
 
   @Autowired private MockMvc mockMvc;
 
-  @Container private static final Containers containers = new Containers();
+  @Container private static Containers containers = new Containers();
 
   @DynamicPropertySource
   static void dynamicProperties(DynamicPropertyRegistry registry) {
