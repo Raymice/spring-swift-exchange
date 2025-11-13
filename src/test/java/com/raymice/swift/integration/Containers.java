@@ -48,7 +48,7 @@ public class Containers implements Startable {
             .withExposedPorts(61616);
 
     postgres =
-        new GenericContainer<>(DockerImageName.parse("postgres:15-alpine"))
+        new GenericContainer<>(DockerImageName.parse("postgres:17-alpine"))
             .withExposedPorts(5432)
             .withEnv("POSTGRES_DB", pgDatabase) // Set database name
             .withEnv("POSTGRES_USER", pgUser)

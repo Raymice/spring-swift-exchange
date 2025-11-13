@@ -19,6 +19,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 This project requires the following dependencies:
 - ActiveMQ classic 6.1.7
 - Redis 8.2.2
+- Postgres 17-alpine
 
 
 ## Profiles
