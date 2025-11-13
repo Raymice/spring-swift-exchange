@@ -28,7 +28,7 @@ public class ValidationRoute extends DefaultRoute {
   public void configure() throws Exception {
 
     final String inputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getInput());
+        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getValidator());
     final String outputQueueUri =
         ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getPacs008());
 

@@ -10,7 +10,6 @@ import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
-import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +22,7 @@ public class PACS_008_001_08Route extends DefaultRoute {
 
     final String inputQueueUri =
         ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getPacs008());
-    final URI outputSuccessPath =
-        URI.create(
-            String.format(
-                "file:%s?noop=false", getRoutingConfig().getOutput().getSuccess().getPath()));
+    final String outputSuccessFilePath = getSuccessFileEndpoint();
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();
@@ -38,7 +34,7 @@ public class PACS_008_001_08Route extends DefaultRoute {
         .process(logProcessor)
         .process(setNameProcessor)
         .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.COMPLETED))
-        .to(outputSuccessPath.toString())
+        .to(outputSuccessFilePath)
         .end();
   }
 

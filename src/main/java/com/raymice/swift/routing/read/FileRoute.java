@@ -17,7 +17,6 @@ import com.raymice.swift.exception.UnsupportedException;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
 import com.raymice.swift.utils.FileUtils;
-import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -45,8 +44,7 @@ public class FileRoute extends DefaultRoute {
   @Override
   public void configure() {
 
-    final RoutingConfig.Input input = getRoutingConfig().getInput();
-    final RoutingConfig.Output output = getRoutingConfig().getOutput();
+    final RoutingConfig.Input input = getRoutingConfig().getFile().getInput();
 
     // Define the route to consume files from a directory
     // TODO externalize read lock parameters
@@ -67,9 +65,7 @@ public class FileRoute extends DefaultRoute {
             .toUriString();
 
     final String outputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getInput());
-    final String outputUnsupportedPath =
-        URI.create(String.format("file:%s", output.getUnsupported())).toString();
+        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getValidator());
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();

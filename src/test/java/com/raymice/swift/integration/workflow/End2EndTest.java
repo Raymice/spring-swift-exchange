@@ -11,6 +11,7 @@ import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.integration.Containers;
 import com.raymice.swift.routing.read.FileRoute;
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -45,6 +46,21 @@ public class End2EndTest {
   @Autowired private ProcessService processService;
   @Container private static final Containers containers = new Containers();
 
+  private String inputFilePath;
+  private String successFilePath;
+  private String unsupportedFilePath;
+  private String errorFilePath;
+
+  @PostConstruct
+  void postConstruct() {
+    var fileConfig = routingConfig.getFile();
+    var fileOutput = fileConfig.getOutput();
+    inputFilePath = fileConfig.getInput().getPath().toString();
+    successFilePath = fileOutput.getSuccess().getPath();
+    unsupportedFilePath = fileOutput.getUnsupported().getPath();
+    errorFilePath = fileOutput.getError().getPath();
+  }
+
   @DynamicPropertySource
   static void dynamicProperties(DynamicPropertyRegistry registry) {
     containers.applyDynamicProperties(registry);
@@ -54,11 +70,7 @@ public class End2EndTest {
   void beforeEach() throws Exception {
     // Clean up input and output directories before each test
     log.info("🧹Cleaning up input and output directories before test");
-    cleanDirectories(
-        routingConfig.getInput().getPath().toString(),
-        routingConfig.getOutput().getUnsupported().getPath(),
-        routingConfig.getOutput().getSuccess().getPath(),
-        routingConfig.getOutput().getError().getPath());
+    cleanDirectories(inputFilePath, unsupportedFilePath, successFilePath, errorFilePath);
 
     log.info("Cleaning DB before test");
     processService.deleteAll();
@@ -68,8 +80,8 @@ public class End2EndTest {
   void unsupportedExtension_movesFileToUnsupportedDirectory()
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    final String outputUnsupportedPath = routingConfig.getOutput().getUnsupported().getPath();
+    final String inputWorkflowPath = inputFilePath;
+    final String outputUnsupportedPath = unsupportedFilePath;
     final String inputFileName = "unsupported.json";
     final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -89,8 +101,8 @@ public class End2EndTest {
   void malformedXML_movesFileToErrorDirectory(CapturedOutput output)
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    final String outputErrorPath = routingConfig.getOutput().getError().getPath();
+    final String inputWorkflowPath = inputFilePath;
+    final String outputErrorPath = errorFilePath;
     final String inputFileName = "malformed.xml";
     final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -111,8 +123,8 @@ public class End2EndTest {
   @Test
   void processesPacs00800108_and_placesFileInSuccessDirectory() throws Exception {
 
-    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    final String outputSuccessPath = routingConfig.getOutput().getSuccess().getPath();
+    final String inputWorkflowPath = inputFilePath;
+    final String outputSuccessPath = successFilePath;
     final String inputFileName = "pacs.008.001.08.xml";
     final String testFilePath = "src/test/resources/mx/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -129,8 +141,8 @@ public class End2EndTest {
 
   @Test
   void processBatchOfFiles_movesAllFilesToSuccessDirectory() throws Exception {
-    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    final String outputSuccessPath = routingConfig.getOutput().getSuccess().getPath();
+    final String inputWorkflowPath = inputFilePath;
+    final String outputSuccessPath = successFilePath;
 
     // Stop the route to prepare for batch processing
     camelContext.getRouteController().stopRoute(FileRoute.class.getSimpleName());
@@ -168,8 +180,8 @@ public class End2EndTest {
   void processUnsupportedMxFileType_movesFileToUnsupportedDirectory()
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = routingConfig.getInput().getPath().toString();
-    final String outputUnsupportedPath = routingConfig.getOutput().getUnsupported().getPath();
+    final String inputWorkflowPath = inputFilePath;
+    final String outputUnsupportedPath = unsupportedFilePath;
     final String inputFileName = "pacs.unsupported-type.xml";
     final String testFilePath = "src/test/resources/mx/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);

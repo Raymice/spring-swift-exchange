@@ -23,8 +23,10 @@ public abstract class DefaultRoute extends RouteBuilder {
   @Autowired private ProcessService processService;
   @Autowired private RoutingConfig routingConfig;
   private final String routeId;
-  private String errorEndpoint;
-  private String unsupportedEndpoint;
+  private String errorFileEndpoint;
+  private String unsupportedFileEndpoint;
+  private String successFileEndpoint;
+  private String deadLetterQueueEndpoint;
 
   public DefaultRoute() {
     this.routeId = this.getClass().getSimpleName();
@@ -32,21 +34,30 @@ public abstract class DefaultRoute extends RouteBuilder {
 
   @PostConstruct
   void postConstruct() {
-    this.errorEndpoint =
-        URI.create(String.format("file:%s", routingConfig.getOutput().getError())).toString();
-    this.unsupportedEndpoint =
-        URI.create(String.format("file:%s", routingConfig.getOutput().getUnsupported())).toString();
+    var fileOutput = routingConfig.getFile().getOutput();
+
+    this.errorFileEndpoint = URI.create(String.format("file:%s", fileOutput.getError())).toString();
+    this.unsupportedFileEndpoint =
+        URI.create(String.format("file:%s", fileOutput.getUnsupported())).toString();
+    this.successFileEndpoint =
+        URI.create(String.format("file:%s", fileOutput.getSuccess().getPath())).toString();
+    this.deadLetterQueueEndpoint =
+        URI.create(String.format("activemq:queue:%s", routingConfig.getQueue().getDeadLetter()))
+            .toString();
   }
 
   public void setupCommonExceptionHandling() {
     onException(UnsupportedException.class)
         .handled(true)
         .process(new UnsupportedProcessor(processService))
-        .to(unsupportedEndpoint);
+        .to(unsupportedFileEndpoint);
 
+    // Non retryable exceptions
     onException(WorkflowStatusException.class, Exception.class)
         .handled(true)
         .process(new ErrorProcessor(processService))
-        .to(errorEndpoint);
+        .multicast()
+        .to(deadLetterQueueEndpoint)
+        .to(errorFileEndpoint);
   }
 }
