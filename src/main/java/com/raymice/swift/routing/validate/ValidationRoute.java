@@ -9,6 +9,7 @@ import static com.raymice.swift.utils.CamelUtils.setMxId;
 import static com.raymice.swift.utils.XmlUtils.isXMLWellFormed;
 
 import com.prowidesoftware.swift.model.MxSwiftMessage;
+import com.raymice.swift.configuration.ApplicationConfig;
 import com.raymice.swift.constant.Header;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.exception.MalformedXmlException;
@@ -25,12 +26,11 @@ import org.springframework.stereotype.Component;
 public class ValidationRoute extends DefaultRoute {
 
   @Override
-  public void configure() throws Exception {
+  public void configure() {
+    final ApplicationConfig.Routing routing = getApplicationConfig().getRouting();
 
-    final String inputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getValidator());
-    final String outputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getPacs008());
+    final String inputQueueUri = ActiveMqUtils.getQueueUri(routing.getQueue().getValidator());
+    final String outputQueueUri = ActiveMqUtils.getQueueUri(routing.getQueue().getPacs008());
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();
@@ -38,6 +38,7 @@ public class ValidationRoute extends DefaultRoute {
     // Take messages from ActiveMQ queue {{app.routing.queue.input}}, validate and route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
+        .transacted()
         .process(parsingProcessor)
         .choice()
         .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
@@ -62,13 +63,6 @@ public class ValidationRoute extends DefaultRoute {
         final String mxID = getMxId(exchange);
         log.info("✅ Message is an {} (processId={})", mxID, processId);
         log.info("📤 Sending message to PACS.008 queue (processId={})", processId);
-      };
-
-  private final org.apache.camel.Processor logUnsupported =
-      exchange -> {
-        final String processId = getProcessId(exchange);
-        final String mxID = getMxId(exchange);
-        log.warn("❌ Message is not supported type='{}' (processId={})", mxID, processId);
       };
 
   private final org.apache.camel.Processor parsingProcessor =

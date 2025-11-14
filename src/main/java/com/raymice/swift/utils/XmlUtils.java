@@ -34,7 +34,6 @@ public class XmlUtils {
       builder.parse(new InputSource(new StringReader(xmlString)));
       return true;
     } catch (Exception e) {
-      log.error("An error occurred: {}", e.getMessage());
       return false;
     }
   }

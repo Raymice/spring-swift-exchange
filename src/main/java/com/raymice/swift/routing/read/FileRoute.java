@@ -10,7 +10,7 @@ import static com.raymice.swift.utils.CamelUtils.setProcessId;
 import static com.raymice.swift.utils.CamelUtils.setStatus;
 import static com.raymice.swift.utils.CamelUtils.setUpdatedFileName;
 
-import com.raymice.swift.configuration.RoutingConfig;
+import com.raymice.swift.configuration.ApplicationConfig;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.UnsupportedException;
@@ -44,7 +44,8 @@ public class FileRoute extends DefaultRoute {
   @Override
   public void configure() {
 
-    final RoutingConfig.Input input = getRoutingConfig().getFile().getInput();
+    final ApplicationConfig.Routing routing = getApplicationConfig().getRouting();
+    final ApplicationConfig.Input input = routing.getFile().getInput();
 
     // Define the route to consume files from a directory
     // TODO externalize read lock parameters
@@ -64,8 +65,7 @@ public class FileRoute extends DefaultRoute {
             .build()
             .toUriString();
 
-    final String outputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getValidator());
+    final String outputQueueUri = ActiveMqUtils.getQueueUri(routing.getQueue().getValidator());
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();

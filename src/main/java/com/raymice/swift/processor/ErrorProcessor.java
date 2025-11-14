@@ -7,6 +7,7 @@ import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.utils.StringUtils;
+import java.rmi.UnexpectedException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -24,7 +25,7 @@ public class ErrorProcessor implements Processor {
   private ProcessService processService;
 
   @Override
-  public void process(Exchange exchange) throws WorkflowStatusException {
+  public void process(Exchange exchange) throws WorkflowStatusException, UnexpectedException {
     final Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
     final String processId = StringUtils.unknownIfBlank(getProcessId(exchange));
 

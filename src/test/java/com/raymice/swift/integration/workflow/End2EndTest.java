@@ -5,7 +5,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.raymice.swift.configuration.RoutingConfig;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.KillContainerCmd;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
+import com.raymice.swift.configuration.ApplicationConfig;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.MalformedXmlException;
@@ -41,7 +47,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 public class End2EndTest {
 
-  @Autowired private RoutingConfig routingConfig;
+  @Autowired private ApplicationConfig applicationConfig;
   @Autowired private CamelContext camelContext;
   @Autowired private ProcessService processService;
   @Container private static final Containers containers = new Containers();
@@ -53,7 +59,8 @@ public class End2EndTest {
 
   @PostConstruct
   void postConstruct() {
-    var fileConfig = routingConfig.getFile();
+    var routing = applicationConfig.getRouting();
+    var fileConfig = routing.getFile();
     var fileOutput = fileConfig.getOutput();
     inputFilePath = fileConfig.getInput().getPath().toString();
     successFilePath = fileOutput.getSuccess().getPath();
@@ -194,6 +201,92 @@ public class End2EndTest {
 
     // Assert the process status is set to UNSUPPORTED in database
     assertStatusInDatabase(ProcessEntity.Status.UNSUPPORTED, 1);
+  }
+
+  @Test
+  void shutdownActiveMq() throws Exception {
+
+    final String inputWorkflowPath = inputFilePath;
+    final String testFileName = "pacs.008.001.08.xml";
+    final int iterations = 100;
+    final String containerId =
+        containers.getContainers().get(Containers.ACTIVEMQ_IMAGE).getContainerId();
+
+    // Stop the route to prepare for batch processing
+    camelContext.getRouteController().stopRoute(FileRoute.class.getSimpleName());
+
+    for (int i = 0; i < iterations; i++) {
+      String testFilePath = "src/test/resources/mx/%s".formatted(testFileName);
+      String inputFilePath = "%s/%d-%s".formatted(inputWorkflowPath, i, testFileName);
+      copyFile(testFilePath, inputFilePath);
+    }
+
+    // Start the route to process the batch of files
+    camelContext.getRouteController().startRoute(FileRoute.class.getSimpleName());
+
+    // Wait a moment to let some files be processed
+    Thread.sleep(4000);
+
+    // Shutdown the ActiveMq container (not using Testcontainers stop to simulate unexpected
+    // shutdown)
+    killContainer(containerId);
+
+    // Wait a moment to simulate downtime
+    Thread.sleep(5000);
+
+    //  Restart the ActiveMq container (keep same ports)
+    startContainer(containerId);
+
+    // Wait to find all files in the success directory (end of processing)
+    assertTrue(hasFileInDirectory(successFilePath, iterations));
+
+    // Assert the process status is set to COMPLETED in database
+    assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
+  }
+
+  private static DockerClient openDockerClient() {
+    var config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    DockerHttpClient httpClient =
+        new ApacheDockerHttpClient.Builder()
+            .dockerHost(config.getDockerHost())
+            .sslConfig(config.getSSLConfig())
+            .maxConnections(100)
+            .connectionTimeout(Duration.ofSeconds(30))
+            .responseTimeout(Duration.ofSeconds(45))
+            .build();
+
+    return DockerClientImpl.getInstance(config, httpClient);
+  }
+
+  private void killContainer(String containerId) throws RuntimeException {
+    try (DockerClient dockerClient = openDockerClient()) {
+
+      // Create a KillContainerCmd
+      KillContainerCmd killCmd = dockerClient.killContainerCmd(containerId);
+
+      // Execute the command to kill the container
+      killCmd.exec();
+
+      log.info("Container {} killed successfully.", containerId);
+
+    } catch (Exception e) {
+      log.error("Error killing container {}: {}", containerId, e.getMessage());
+      throw new RuntimeException();
+    }
+  }
+
+  private void startContainer(String containerId) throws RuntimeException {
+    try (DockerClient dockerClient = openDockerClient()) {
+
+      // Start the container
+      dockerClient.startContainerCmd(containerId).exec();
+
+      log.info("Container {} started successfully.", containerId);
+
+    } catch (Exception e) {
+      log.error("Error starting container {}: {}", containerId, e.getMessage());
+      throw new RuntimeException();
+    }
   }
 
   private void assertStatusInDatabase(ProcessEntity.Status expectedStatus, int expectedCount) {

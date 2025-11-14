@@ -20,8 +20,8 @@ public class PACS_008_001_08Route extends DefaultRoute {
   @Override
   public void configure() throws Exception {
 
-    final String inputQueueUri =
-        ActiveMqUtils.getQueueUri(getRoutingConfig().getQueue().getPacs008());
+    final var routeConfig = getApplicationConfig().getRouting();
+    final String inputQueueUri = ActiveMqUtils.getQueueUri(routeConfig.getQueue().getPacs008());
     final String outputSuccessFilePath = getSuccessFileEndpoint();
 
     // Call the parent method to apply the shared error handling
@@ -31,6 +31,7 @@ public class PACS_008_001_08Route extends DefaultRoute {
     // accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
+        .transacted()
         .process(logProcessor)
         .process(setNameProcessor)
         .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.COMPLETED))

@@ -5,12 +5,16 @@ import com.raymice.swift.configuration.profile.TestProfileOnly;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
 import com.raymice.swift.exception.WorkflowStatusException;
+import com.raymice.swift.utils.CamelUtils;
 import jakarta.validation.constraints.NotNull;
+import java.rmi.UnexpectedException;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,14 +58,19 @@ public class ProcessService {
 
   /**
    * Update the status of a process in the database
-   * @param processId the id of the process to update
+   * @param exchange Camel Exchange
    * @param newStatus the new status to set
    */
-  public void updateProcessStatus(long processId, ProcessEntity.Status newStatus)
-      throws WorkflowStatusException {
+  @Transactional
+  public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
+      throws WorkflowStatusException, UnexpectedException {
 
-    ProcessEntity currentProcess = findById(processId);
-    ProcessEntity.Status actualStatus = currentProcess.getStatus();
+    final String processId = CamelUtils.getProcessId(exchange);
+    final ProcessEntity.Status actualStatus = CamelUtils.getStatus(exchange);
+
+    if (actualStatus == null) {
+      throw new UnexpectedException("No status on exchange");
+    }
 
     // Check if status update is allowed
     if (!isStatusAllowedToUpdate(actualStatus, newStatus)) {
@@ -80,8 +89,12 @@ public class ProcessService {
         actualStatus,
         newStatus);
 
-    processRepo.updateStatusById(newStatus, processId);
-    log.info("🔄Process with id={} updated to status: {}", processId, newStatus);
+    processRepo.updateStatusById(newStatus, Long.parseLong(processId));
+    log.info(
+        "🔄Process with id={} updated from status={} to status={}",
+        processId,
+        actualStatus,
+        newStatus);
   }
 
   @TestProfileOnly
