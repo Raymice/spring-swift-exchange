@@ -4,8 +4,14 @@ package com.raymice.swift.integration;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.containers.GenericContainer;
@@ -38,9 +44,35 @@ public class Containers implements Startable {
 
   @Override
   public void start() {
-    for (GenericContainer<?> container : containers.values()) {
-      log.info("🚀Starting container: {}", container.getDockerImageName());
-      container.start();
+    // Parallelize startup of containers
+    try (ExecutorService executor = Executors.newFixedThreadPool(containers.size())) {
+      List<Future<?>> futures = new ArrayList<>();
+
+      for (GenericContainer<?> container : containers.values()) {
+        futures.add(
+            executor.submit(
+                () -> {
+                  log.info("🚀 Starting container: {}", container.getDockerImageName());
+                  container.start();
+                  try {
+                    // Wait to avoid issues when running all the tests at once
+                    Thread.sleep(2000);
+                  } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                  }
+                  log.info("\uD83C\uDFC3 Container started: {}", container.getDockerImageName());
+                }));
+      }
+
+      // Wait for all tasks to complete
+      for (Future<?> future : futures) {
+        try {
+          // This will block until the task is completed
+          future.get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new RuntimeException("Failed to start containers in parallel", e);
+        }
+      }
     }
   }
 
