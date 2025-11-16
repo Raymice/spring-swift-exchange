@@ -205,12 +205,31 @@ public class End2EndTest {
 
   @Test
   void shutdownActiveMq() throws Exception {
+    testContainerShutdown(Containers.ACTIVEMQ_IMAGE, 100, 4000);
+  }
 
+  @Test
+  void shutdownRedis() throws Exception {
+    testContainerShutdown(Containers.REDIS_IMAGE, 1000, 5000);
+
+    // TODO Check "Reconnected to localhost/<unresolved>:3333"
+  }
+
+  /**
+   * Tests the container shutdown scenario by stopping the Camel route, copying test files to the input directory,
+   * starting the Camel route to process the batch of files, simulating container shutdown, waiting for downtime,
+   * restarting the container, and verifying that all files are processed and the process status is set to COMPLETED.
+   *
+   * @param containerName The name of the container to test.
+   * @param iterations The number of iterations to perform the test.
+   * @param sleepTime The time to wait between operations in milliseconds.
+   * @throws Exception If an error occurs during the test.
+   */
+  private void testContainerShutdown(String containerName, int iterations, int sleepTime)
+      throws Exception {
     final String inputWorkflowPath = inputFilePath;
     final String testFileName = "pacs.008.001.08.xml";
-    final int iterations = 100;
-    final String containerId =
-        containers.getContainers().get(Containers.ACTIVEMQ_IMAGE).getContainerId();
+    final String containerId = containers.getContainers().get(containerName).getContainerId();
 
     // Stop the route to prepare for batch processing
     camelContext.getRouteController().stopRoute(FileRoute.class.getSimpleName());
@@ -225,16 +244,15 @@ public class End2EndTest {
     camelContext.getRouteController().startRoute(FileRoute.class.getSimpleName());
 
     // Wait a moment to let some files be processed
-    Thread.sleep(4000);
+    Thread.sleep(sleepTime);
 
-    // Shutdown the ActiveMq container (not using Testcontainers stop to simulate unexpected
-    // shutdown)
+    // Shutdown the container (not using Testcontainers stop to simulate unexpected shutdown)
     killContainer(containerId);
 
     // Wait a moment to simulate downtime
-    Thread.sleep(5000);
+    Thread.sleep(sleepTime * 3L);
 
-    //  Restart the ActiveMq container (keep same ports)
+    // Restart the container (keep same ports)
     startContainer(containerId);
 
     // Wait to find all files in the success directory (end of processing)
@@ -244,6 +262,11 @@ public class End2EndTest {
     assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
   }
 
+  /**
+   * Opens a Docker client with default configuration.
+   *
+   * @return A DockerClient instance configured with default settings.
+   */
   private static DockerClient openDockerClient() {
     var config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
     DockerHttpClient httpClient =
@@ -258,6 +281,16 @@ public class End2EndTest {
     return DockerClientImpl.getInstance(config, httpClient);
   }
 
+  /**
+   * Kills a Docker container with the specified ID.
+   *
+   * <p>This method attempts to kill a Docker container using the provided container ID.
+   * It uses the Docker client to execute the kill command. If the operation fails,
+   * it logs an error message and throws a RuntimeException.</p>
+   *
+   * @param containerId The ID of the Docker container to be killed.
+   * @throws RuntimeException If an error occurs while killing the container.
+   */
   private void killContainer(String containerId) throws RuntimeException {
     try (DockerClient dockerClient = openDockerClient()) {
 
@@ -267,7 +300,7 @@ public class End2EndTest {
       // Execute the command to kill the container
       killCmd.exec();
 
-      log.info("Container {} killed successfully.", containerId);
+      log.info("\uD83D\uDCA5 Container {} killed successfully.", containerId);
 
     } catch (Exception e) {
       log.error("Error killing container {}: {}", containerId, e.getMessage());
@@ -275,6 +308,12 @@ public class End2EndTest {
     }
   }
 
+  /**
+   * Starts a Docker container with the specified container ID.
+   *
+   * @param containerId The ID of the Docker container to start.
+   * @throws RuntimeException If an error occurs while starting the container.
+   */
   private void startContainer(String containerId) throws RuntimeException {
     try (DockerClient dockerClient = openDockerClient()) {
 
