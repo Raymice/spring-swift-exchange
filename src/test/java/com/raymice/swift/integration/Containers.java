@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
@@ -95,7 +94,8 @@ public class Containers implements Startable {
                           new PortBinding(
                               // Force map container port 1111 to host port 61616 for automatic
                               // reconnection during testing
-                              Ports.Binding.bindPort(1111), new ExposedPort(61616)));
+                              Ports.Binding.bindPort(1111), new ExposedPort(61616)),
+                          new PortBinding(Ports.Binding.bindPort(1112), new ExposedPort(8161)));
                 });
 
     postgres =
@@ -128,36 +128,5 @@ public class Containers implements Startable {
     containers.put(ACTIVEMQ_IMAGE, activemq);
     containers.put(POSTGRES_IMAGE, postgres);
     containers.put(REDIS_IMAGE, redis);
-  }
-
-  public void applyDynamicProperties(DynamicPropertyRegistry registry) {
-    final String host = activemq.getHost();
-    final Integer port = activemq.getMappedPort(61616);
-
-    registry.add(
-        "spring.activemq.broker-url",
-        () -> "failover:(tcp://%s:%d)?startupMaxReconnectAttempts=-1".formatted(host, port));
-    log.info("ℹ️ActiveMQ broker URL updated: tcp://{}:{}", host, port);
-
-    final String postgresHost = postgres.getHost();
-    final Integer postgresPort = postgres.getMappedPort(5432);
-
-    registry.add(
-        "spring.datasource.url",
-        () -> "jdbc:postgresql://%s:%d/%s".formatted(postgresHost, postgresPort, pgDatabase));
-    registry.add("spring.datasource.username", () -> pgUser);
-    registry.add("spring.datasource.password", () -> pgPassword);
-    log.info(
-        "ℹ️Postgres connection updated: jdbc:postgresql://{}:{}/{}}",
-        postgresHost,
-        postgresPort,
-        pgDatabase);
-
-    final String redisHost = redis.getHost();
-    final Integer redisPort = redis.getMappedPort(6379);
-
-    registry.add("spring.redis.url", () -> redisHost);
-    registry.add("spring.redis.port", () -> redisPort);
-    log.info("ℹ️Redis connection updated: {}:{}", redisHost, redisPort);
   }
 }

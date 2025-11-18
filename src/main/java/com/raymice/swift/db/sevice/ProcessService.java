@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +60,6 @@ public class ProcessService {
    * @param exchange Camel Exchange
    * @param newStatus the new status to set
    */
-  @Transactional
   public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
       throws WorkflowStatusException, UnexpectedException {
 

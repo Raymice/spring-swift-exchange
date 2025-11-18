@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.commons.io.FileUtils;
@@ -36,8 +38,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -45,6 +45,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @SpringBootTest()
 @ActiveProfiles("test")
+@ExtendWith(OutputCaptureExtension.class)
 public class End2EndTest {
 
   @Autowired private ApplicationConfig applicationConfig;
@@ -66,11 +67,6 @@ public class End2EndTest {
     successFilePath = fileOutput.getSuccess().getPath();
     unsupportedFilePath = fileOutput.getUnsupported().getPath();
     errorFilePath = fileOutput.getError().getPath();
-  }
-
-  @DynamicPropertySource
-  static void dynamicProperties(DynamicPropertyRegistry registry) {
-    containers.applyDynamicProperties(registry);
   }
 
   @BeforeEach
@@ -204,15 +200,33 @@ public class End2EndTest {
   }
 
   @Test
-  void shutdownActiveMq() throws Exception {
-    testContainerShutdown(Containers.ACTIVEMQ_IMAGE, 100, 4000);
+  void shutdownActiveMq(CapturedOutput output) throws Exception {
+    final String disconnectionMsg =
+        "Transport (tcp://localhost:1111) failed, attempting to automatically reconnect";
+    final String reconnectionMsg = "Successfully reconnected to tcp://localhost:1111";
+
+    testContainerShutdown(
+        output, Containers.ACTIVEMQ_IMAGE, 100, 4000, disconnectionMsg, reconnectionMsg);
   }
 
   @Test
-  void shutdownRedis() throws Exception {
-    testContainerShutdown(Containers.REDIS_IMAGE, 1000, 5000);
+  void shutdownRedis(CapturedOutput output) throws Exception {
+    final String disconnectionMsg =
+        "Cannot reconnect to [localhost/<unresolved>:3333]: readAddress(..) failed: Connection"
+            + " reset by peer";
+    final String reconnectionMsg = "Reconnected to localhost/<unresolved>:3333";
 
-    // TODO Check "Reconnected to localhost/<unresolved>:3333"
+    testContainerShutdown(
+        output, Containers.REDIS_IMAGE, 1000, 5000, disconnectionMsg, reconnectionMsg);
+  }
+
+  @Test
+  void shutdownPostgres(CapturedOutput output) throws Exception {
+    final String disconnectionMsg = "HikariPool-1 - Connection is not available";
+    final String reconnectionMsg = "HikariPool-1 - Established new connection";
+
+    testContainerShutdown(
+        output, Containers.POSTGRES_IMAGE, 100, 4000, disconnectionMsg, reconnectionMsg);
   }
 
   /**
@@ -225,7 +239,13 @@ public class End2EndTest {
    * @param sleepTime The time to wait between operations in milliseconds.
    * @throws Exception If an error occurs during the test.
    */
-  private void testContainerShutdown(String containerName, int iterations, int sleepTime)
+  private void testContainerShutdown(
+      CapturedOutput output,
+      String containerName,
+      int iterations,
+      int sleepTime,
+      String disconnectionMsg,
+      String reconnectionMsg)
       throws Exception {
     final String inputWorkflowPath = inputFilePath;
     final String testFileName = "pacs.008.001.08.xml";
@@ -260,6 +280,24 @@ public class End2EndTest {
 
     // Assert the process status is set to COMPLETED in database
     assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
+
+    // Check container killed
+    String regex = "(\uD83D\uDCA5 Container )[a-f0-9]{64}( killed successfully)";
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(output.getOut());
+    assertThat(matcher.find());
+
+    // Check container started
+    regex = "(\uD83C\uDFC1 Container )[a-f0-9]{64}( started successfully)";
+    pattern = Pattern.compile(regex);
+    matcher = pattern.matcher(output.getOut());
+    assertThat(matcher.find());
+
+    // Check disconnection appended
+    assertThat(output.getOut()).contains(disconnectionMsg);
+
+    // Check re-onnection appended
+    assertThat(output.getOut()).contains(reconnectionMsg);
   }
 
   /**
@@ -320,7 +358,7 @@ public class End2EndTest {
       // Start the container
       dockerClient.startContainerCmd(containerId).exec();
 
-      log.info("Container {} started successfully.", containerId);
+      log.info("\uD83C\uDFC1 Container {} started successfully.", containerId);
 
     } catch (Exception e) {
       log.error("Error starting container {}: {}", containerId, e.getMessage());

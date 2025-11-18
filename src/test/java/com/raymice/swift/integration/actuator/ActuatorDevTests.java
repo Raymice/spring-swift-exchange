@@ -13,15 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Slf4j
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles({"dev", "test"})
 @Testcontainers
 @AutoConfigureMockMvc
 class ActuatorDevTests {
@@ -31,11 +29,6 @@ class ActuatorDevTests {
   @Autowired private MockMvc mockMvc;
 
   @Container private static Containers containers = new Containers();
-
-  @DynamicPropertySource
-  static void dynamicProperties(DynamicPropertyRegistry registry) {
-    containers.applyDynamicProperties(registry);
-  }
 
   @Order(1)
   @Test

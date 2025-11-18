@@ -31,7 +31,6 @@ public class PACS_008_001_08Route extends DefaultRoute {
     // accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
-        .transacted()
         .process(logProcessor)
         .process(setNameProcessor)
         .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.COMPLETED))

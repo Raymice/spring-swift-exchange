@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ProcessRepo extends JpaRepository<ProcessEntity, Long> {
 
-  @Modifying
   @Transactional
+  @Modifying
   @Query(
       value =
           "UPDATE ProcessEntity p SET p.status = :newStatus, p.updatedAt = instant WHERE p.id ="

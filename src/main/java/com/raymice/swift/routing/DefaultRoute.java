@@ -74,6 +74,13 @@ public abstract class DefaultRoute extends RouteBuilder {
         .to(deadLetterQueueEndpoint)
         .to(errorFileEndpoint);
 
+    // Manage disconnection of PostgresDB
+    onException(
+            org.springframework.dao.DataAccessResourceFailureException.class,
+            org.springframework.orm.jpa.JpaSystemException.class,
+            org.springframework.transaction.CannotCreateTransactionException.class)
+        .maximumRedeliveries(-1);
+
     // Retryable exceptions
     onException(Exception.class)
         .onRedelivery(new RetryProcessor())

@@ -38,7 +38,6 @@ public class ValidationRoute extends DefaultRoute {
     // Take messages from ActiveMQ queue {{app.routing.queue.input}}, validate and route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
-        .transacted()
         .process(parsingProcessor)
         .choice()
         .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
