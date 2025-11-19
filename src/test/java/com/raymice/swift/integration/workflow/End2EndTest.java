@@ -20,7 +20,6 @@ import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.integration.Containers;
 import com.raymice.swift.routing.read.FileRoute;
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -52,27 +51,15 @@ public class End2EndTest {
   @Autowired private ProcessService processService;
   @Container private static final Containers containers = new Containers();
 
-  private String inputFilePath;
-  private String successFilePath;
-  private String unsupportedFilePath;
-  private String errorFilePath;
-
-  @PostConstruct
-  void postConstruct() {
-    var routing = applicationConfig.getRouting();
-    var fileConfig = routing.getFile();
-    var fileOutput = fileConfig.getOutput();
-    inputFilePath = fileConfig.getInput().getPath().toString();
-    successFilePath = fileOutput.getSuccess().getPath();
-    unsupportedFilePath = fileOutput.getUnsupported().getPath();
-    errorFilePath = fileOutput.getError().getPath();
-  }
-
   @BeforeEach
   void beforeEach() throws Exception {
     // Clean up input and output directories before each test
     log.info("🧹Cleaning up input and output directories before test");
-    cleanDirectories(inputFilePath, unsupportedFilePath, successFilePath, errorFilePath);
+    cleanDirectories(
+        applicationConfig.getFileInputPath(),
+        applicationConfig.getFileOutputUnsupportedPath(),
+        applicationConfig.getFileOutputSuccessPath(),
+        applicationConfig.getFileOutputErrorPath());
 
     log.info("Cleaning DB before test");
     processService.deleteAll();
@@ -82,8 +69,8 @@ public class End2EndTest {
   void unsupportedExtension_movesFileToUnsupportedDirectory()
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = inputFilePath;
-    final String outputUnsupportedPath = unsupportedFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
+    final String outputUnsupportedPath = applicationConfig.getFileOutputUnsupportedPath();
     final String inputFileName = "unsupported.json";
     final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -103,8 +90,8 @@ public class End2EndTest {
   void malformedXML_movesFileToErrorDirectory(CapturedOutput output)
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = inputFilePath;
-    final String outputErrorPath = errorFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
+    final String outputErrorPath = applicationConfig.getFileOutputErrorPath();
     final String inputFileName = "malformed.xml";
     final String testFilePath = "src/test/resources/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -125,8 +112,8 @@ public class End2EndTest {
   @Test
   void processesPacs00800108_and_placesFileInSuccessDirectory() throws Exception {
 
-    final String inputWorkflowPath = inputFilePath;
-    final String outputSuccessPath = successFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
+    final String outputSuccessPath = applicationConfig.getFileOutputSuccessPath();
     final String inputFileName = "pacs.008.001.08.xml";
     final String testFilePath = "src/test/resources/mx/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -143,8 +130,8 @@ public class End2EndTest {
 
   @Test
   void processBatchOfFiles_movesAllFilesToSuccessDirectory() throws Exception {
-    final String inputWorkflowPath = inputFilePath;
-    final String outputSuccessPath = successFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
+    final String outputSuccessPath = applicationConfig.getFileOutputSuccessPath();
 
     // Stop the route to prepare for batch processing
     camelContext.getRouteController().stopRoute(FileRoute.class.getSimpleName());
@@ -182,8 +169,8 @@ public class End2EndTest {
   void processUnsupportedMxFileType_movesFileToUnsupportedDirectory()
       throws IOException, InterruptedException {
 
-    final String inputWorkflowPath = inputFilePath;
-    final String outputUnsupportedPath = unsupportedFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
+    final String outputUnsupportedPath = applicationConfig.getFileOutputUnsupportedPath();
     final String inputFileName = "pacs.unsupported-type.xml";
     final String testFilePath = "src/test/resources/mx/%s".formatted(inputFileName);
     final String inputFilePath = "%s/%s".formatted(inputWorkflowPath, inputFileName);
@@ -226,7 +213,7 @@ public class End2EndTest {
   private void testContainerShutdown(
       CapturedOutput output, final String containerName, final int iterations, final int sleepTime)
       throws Exception {
-    final String inputWorkflowPath = inputFilePath;
+    final String inputWorkflowPath = applicationConfig.getFileInputPath();
     final String testFileName = "pacs.008.001.08.xml";
     final String containerId = containers.getContainers().get(containerName).getContainerId();
 
@@ -255,7 +242,7 @@ public class End2EndTest {
     startContainer(containerId);
 
     // Wait to find all files in the success directory (end of processing)
-    assertTrue(hasFileInDirectory(successFilePath, iterations));
+    assertTrue(hasFileInDirectory(applicationConfig.getFileOutputSuccessPath(), iterations));
 
     // Assert the process status is set to COMPLETED in database
     assertStatusInDatabase(ProcessEntity.Status.COMPLETED, iterations);
@@ -339,6 +326,19 @@ public class End2EndTest {
     }
   }
 
+  /**
+   * Asserts that the process entities in the database match the expected status and count.
+   *
+   * <p>This method retrieves all process entities from the database and verifies that:
+   * <ul>
+   *   <li>The total number of entities matches the expected count</li>
+   *   <li>Each entity has the expected status</li>
+   * </ul>
+   *
+   * @param expectedStatus The expected status of all process entities
+   * @param expectedCount The expected number of process entities in the database
+   * @throws AssertionError If the actual count or status doesn't match the expected values
+   */
   private void assertStatusInDatabase(ProcessEntity.Status expectedStatus, int expectedCount) {
     List<ProcessEntity> processEntities = processService.findAll();
     assertEquals(expectedCount, processEntities.size());

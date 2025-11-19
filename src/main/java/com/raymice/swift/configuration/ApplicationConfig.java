@@ -68,4 +68,24 @@ public class ApplicationConfig {
     // Dead letter queue for failed messages
     @NotBlank private String deadLetter = "swift-dead-letter"; // app.routing.queue.deadLetter
   }
+
+  public String getFileInputPath() {
+    return routing.file.input.path.getPath();
+  }
+
+  public String getFileOutputSuccessPath() {
+    return routing.file.output.success.getPath();
+  }
+
+  public String getFileOutputUnsupportedPath() {
+    return routing.file.output.unsupported.getPath();
+  }
+
+  public String getFileOutputErrorPath() {
+    return routing.file.output.error.getPath();
+  }
+
+  public String getQueueValidatorName() {
+    return routing.queue.validator;
+  }
 }
