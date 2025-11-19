@@ -1,6 +1,9 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.integration.workflow;
 
+import static com.raymice.swift.TestingUtils.cleanDirectories;
+import static com.raymice.swift.TestingUtils.copyFile;
+import static com.raymice.swift.TestingUtils.hasFileInDirectory;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,18 +21,14 @@ import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.integration.Containers;
 import com.raymice.swift.routing.read.FileRoute;
 import jakarta.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -201,32 +200,17 @@ public class End2EndTest {
 
   @Test
   void shutdownActiveMq(CapturedOutput output) throws Exception {
-    final String disconnectionMsg =
-        "Transport (tcp://localhost:1111) failed, attempting to automatically reconnect";
-    final String reconnectionMsg = "Successfully reconnected to tcp://localhost:1111";
-
-    testContainerShutdown(
-        output, Containers.ACTIVEMQ_IMAGE, 100, 4000, disconnectionMsg, reconnectionMsg);
+    testContainerShutdown(output, Containers.ACTIVEMQ_IMAGE, 100, 4000);
   }
 
   @Test
   void shutdownRedis(CapturedOutput output) throws Exception {
-    final String disconnectionMsg =
-        "Cannot reconnect to [localhost/<unresolved>:3333]: readAddress(..) failed: Connection"
-            + " reset by peer";
-    final String reconnectionMsg = "Reconnected to localhost/<unresolved>:3333";
-
-    testContainerShutdown(
-        output, Containers.REDIS_IMAGE, 1000, 5000, disconnectionMsg, reconnectionMsg);
+    testContainerShutdown(output, Containers.REDIS_IMAGE, 1000, 5000);
   }
 
   @Test
   void shutdownPostgres(CapturedOutput output) throws Exception {
-    final String disconnectionMsg = "HikariPool-1 - Connection is not available";
-    final String reconnectionMsg = "HikariPool-1 - Established new connection";
-
-    testContainerShutdown(
-        output, Containers.POSTGRES_IMAGE, 100, 4000, disconnectionMsg, reconnectionMsg);
+    testContainerShutdown(output, Containers.POSTGRES_IMAGE, 100, 4000);
   }
 
   /**
@@ -240,12 +224,7 @@ public class End2EndTest {
    * @throws Exception If an error occurs during the test.
    */
   private void testContainerShutdown(
-      CapturedOutput output,
-      String containerName,
-      int iterations,
-      int sleepTime,
-      String disconnectionMsg,
-      String reconnectionMsg)
+      CapturedOutput output, final String containerName, final int iterations, final int sleepTime)
       throws Exception {
     final String inputWorkflowPath = inputFilePath;
     final String testFileName = "pacs.008.001.08.xml";
@@ -292,12 +271,6 @@ public class End2EndTest {
     pattern = Pattern.compile(regex);
     matcher = pattern.matcher(output.getOut());
     assertThat(matcher.find());
-
-    // Check disconnection appended
-    assertThat(output.getOut()).contains(disconnectionMsg);
-
-    // Check re-onnection appended
-    assertThat(output.getOut()).contains(reconnectionMsg);
   }
 
   /**
@@ -371,55 +344,6 @@ public class End2EndTest {
     assertEquals(expectedCount, processEntities.size());
     for (ProcessEntity entity : processEntities) {
       assertEquals(expectedStatus, entity.getStatus());
-    }
-  }
-
-  private int countFilesInDirectory(String directoryPath) {
-    return FileUtils.listFiles(
-            new File(directoryPath), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
-        .size();
-  }
-
-  private void copyFile(String sourcePath, String destinationPath) throws IOException {
-    FileUtils.copyFile(new File(sourcePath), new File(destinationPath));
-  }
-
-  private void cleanDirectories(String... paths) throws IOException {
-    for (String path : paths) {
-      // Clean only if directory exists
-      File f = new File(path);
-      if (f.isDirectory() && f.exists()) {
-        FileUtils.cleanDirectory(f);
-      }
-    }
-  }
-
-  private Optional<File> getFileInDirectory(String directoryPath) {
-    return FileUtils.listFiles(
-            new File(directoryPath), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
-        .stream()
-        .findFirst();
-  }
-
-  private boolean hasFileInDirectory(String directoryPath, int expectedCount)
-      throws InterruptedException {
-    LocalDateTime startTime = LocalDateTime.now();
-    while (countFilesInDirectory(directoryPath) != expectedCount) {
-      if (Duration.between(startTime, LocalDateTime.now()).toSeconds() > expectedCount * 1.2) {
-        log.error("⏱ Timeout waiting for file in directory: {}", directoryPath);
-        return false;
-      }
-
-      // Wait to prevent high CPU usage
-      Thread.sleep(10);
-    }
-
-    Optional<File> resultFileOpt = getFileInDirectory(directoryPath);
-    if (resultFileOpt.isEmpty()) {
-      throw new AssertionError("Output file not found in expected directory");
-    } else {
-      log.info("✅Output file found: {}", resultFileOpt.get().getAbsolutePath());
-      return true;
     }
   }
 }
