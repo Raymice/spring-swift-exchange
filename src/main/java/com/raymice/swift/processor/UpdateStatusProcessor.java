@@ -1,7 +1,6 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.processor;
 
-import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.setStatus;
 
 import com.raymice.swift.db.entity.ProcessEntity;
@@ -24,7 +23,6 @@ public record UpdateStatusProcessor(ProcessService processService, ProcessEntity
 
   @Override
   public void process(Exchange exchange) throws WorkflowStatusException, UnexpectedException {
-    final String processId = getProcessId(exchange);
 
     // Update in database
     processService.updateProcessStatus(exchange, newStatus);

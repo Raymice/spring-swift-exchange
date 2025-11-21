@@ -6,6 +6,7 @@ import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
 import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.utils.CamelUtils;
+import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.validation.constraints.NotNull;
 import java.rmi.UnexpectedException;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class ProcessService {
    * @param payload file content
    * @return the saved ProcessEntity
    */
+  @NewSpan(name = "createProcess")
   public ProcessEntity createProcess(String name, String payload) {
     ProcessEntity process = new ProcessEntity();
     process.setName(name);
@@ -60,6 +62,7 @@ public class ProcessService {
    * @param exchange Camel Exchange
    * @param newStatus the new status to set
    */
+  @NewSpan(name = "updateProcessStatus")
   public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
       throws WorkflowStatusException, UnexpectedException {
 
@@ -88,6 +91,7 @@ public class ProcessService {
         newStatus);
 
     processRepo.updateStatusById(newStatus, Long.parseLong(processId));
+
     log.info(
         "🔄Process with id={} updated from status={} to status={}",
         processId,
