@@ -6,6 +6,7 @@ import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
 import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.utils.CamelUtils;
+import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.validation.constraints.NotNull;
 import java.rmi.UnexpectedException;
@@ -22,14 +23,16 @@ import org.springframework.stereotype.Service;
 public class ProcessService {
 
   private final ProcessRepo processRepo;
+  private final Tracer tracer;
 
   /**
    * Create a new process record in the database
-   * @param name file name
+   *
+   * @param name    file name
    * @param payload file content
    * @return the saved ProcessEntity
    */
-  @NewSpan(name = "createProcess")
+  @NewSpan(name = "create-process")
   public ProcessEntity createProcess(String name, String payload) {
     ProcessEntity process = new ProcessEntity();
     process.setName(name);
@@ -45,6 +48,7 @@ public class ProcessService {
 
   /**
    * Find a process by its id
+   *
    * @param processId the id of the process to find
    * @return the found ProcessEntity
    * @throws IllegalArgumentException if the process is not found
@@ -59,12 +63,13 @@ public class ProcessService {
 
   /**
    * Update the status of a process in the database
-   * @param exchange Camel Exchange
+   *
+   * @param exchange  Camel Exchange
    * @param newStatus the new status to set
    */
-  @NewSpan(name = "updateProcessStatus")
+  @NewSpan(name = "update-process-status")
   public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
-      throws WorkflowStatusException, UnexpectedException {
+      throws Exception {
 
     final String processId = CamelUtils.getProcessId(exchange);
     final ProcessEntity.Status actualStatus = CamelUtils.getStatus(exchange);
@@ -111,6 +116,7 @@ public class ProcessService {
 
   private boolean isStatusAllowedToUpdate(
       @NotNull ProcessEntity.Status actual, @NotNull ProcessEntity.Status newStatus) {
+
     if (actual == null || newStatus == null) {
       // Null statuses are not allowed
       return false;

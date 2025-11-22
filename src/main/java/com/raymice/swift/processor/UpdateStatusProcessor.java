@@ -5,9 +5,7 @@ import static com.raymice.swift.utils.CamelUtils.setStatus;
 
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.sevice.ProcessService;
-import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.routing.DefaultRoute;
-import java.rmi.UnexpectedException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -22,7 +20,7 @@ public record UpdateStatusProcessor(ProcessService processService, ProcessEntity
     implements Processor {
 
   @Override
-  public void process(Exchange exchange) throws WorkflowStatusException, UnexpectedException {
+  public void process(Exchange exchange) throws Exception {
 
     // Update in database
     processService.updateProcessStatus(exchange, newStatus);

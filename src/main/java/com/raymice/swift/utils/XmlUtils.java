@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.utils;
 
+import io.micrometer.core.annotation.Timed;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,6 +21,7 @@ public class XmlUtils {
    * @param xmlString the XML string to check
    * @return true if well-formed, false otherwise
    */
+  @Timed
   public static boolean isXMLWellFormed(String xmlString) {
 
     if (StringUtils.isBlank(xmlString)) {

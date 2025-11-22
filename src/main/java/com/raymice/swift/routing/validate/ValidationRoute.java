@@ -17,13 +17,19 @@ import com.raymice.swift.exception.UnsupportedException;
 import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
+import com.raymice.swift.tracing.CustomSpan;
 import com.raymice.swift.utils.StringUtils;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class ValidationRoute extends DefaultRoute {
+
+  @Autowired private Tracer tracer;
 
   @Override
   public void configure() {
@@ -38,7 +44,7 @@ public class ValidationRoute extends DefaultRoute {
     // Take messages from ActiveMQ queue {{app.routing.queue.input}}, validate and route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
-        .process(parsingProcessor)
+        .process(this::parseAndValidate)
         .choice()
         .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
         .process(logProcessor)
@@ -64,29 +70,42 @@ public class ValidationRoute extends DefaultRoute {
         log.info("📤 Sending message to PACS.008 queue (processId={})", processId);
       };
 
-  private final org.apache.camel.Processor parsingProcessor =
-      exchange -> {
-        final String processId = getProcessId(exchange);
-        final String queueName = getQueueName(exchange);
-        log.info(
-            "🔍 Validating well formed message from ActiveMQ (processId={}, queue={})",
-            processId,
-            queueName);
+  private void parseAndValidate(Exchange exchange) throws Exception {
+    try (CustomSpan topSpan = new CustomSpan(tracer, "parse-and-validate", exchange)) {
 
-        String xml = exchange.getIn().getBody(String.class);
+      final String processId = getProcessId(exchange);
+      final String queueName = getQueueName(exchange);
 
-        // Validate XML well-formed
-        if (!isXMLWellFormed(xml)) {
-          throw new MalformedXmlException();
-        }
+      log.info(
+          "🔍 Validating well formed message from ActiveMQ (processId={}, queue={})",
+          processId,
+          queueName);
 
-        // Check message type (MX)
-        // Use MxSwiftMessage for performance
-        // https://dev.prowidesoftware.com/latest/open-source/iso20022/iso20022-parser/
+      String xml = exchange.getIn().getBody(String.class);
+
+      // Validate XML well-formed
+      boolean isXMLWellFormed;
+      try (CustomSpan _ = new CustomSpan(tracer, "xml-formed", exchange)) {
+        isXMLWellFormed = isXMLWellFormed(xml);
+      }
+
+      if (!isXMLWellFormed) {
+        MalformedXmlException ex = new MalformedXmlException();
+        topSpan.setError(ex);
+        throw ex;
+      }
+
+      // Check message type (MX)
+      // Use MxSwiftMessage for performance
+      // https://dev.prowidesoftware.com/latest/open-source/iso20022/iso20022-parser/
+      try (CustomSpan _ = new CustomSpan(tracer, "mx-parse", exchange))
+      {
         MxSwiftMessage msg = MxSwiftMessage.parse(xml);
 
         // Set MX_ID header
         String mxId = StringUtils.unknownIfBlank(msg.getMxId().id());
         setMxId(exchange, mxId);
-      };
+      }
+    }
+  }
 }
