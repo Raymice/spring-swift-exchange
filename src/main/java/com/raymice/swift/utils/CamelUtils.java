@@ -1,11 +1,13 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.utils;
 
+import static com.raymice.swift.constant.Header.CUSTOM_PATTERN;
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_DESTINATION;
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_MESSAGE_ID;
 
 import com.raymice.swift.constant.Header;
 import com.raymice.swift.db.entity.ProcessEntity;
+import jakarta.annotation.Nullable;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.zip.CRC32;
@@ -167,7 +169,7 @@ public class CamelUtils {
    * Get Status from Camel Exchange header.
    * @param exchange Camel Exchange
    * @return Status
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException error
    */
   public static ProcessEntity.Status getStatus(Exchange exchange) throws IllegalArgumentException {
     return ProcessEntity.Status.valueOf(getHeader(exchange, Header.CUSTOM_HEADER_STATUS));
@@ -177,11 +179,32 @@ public class CamelUtils {
    * Set Status in Camel Exchange header.
    * @param exchange Camel Exchange
    * @param status Status
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException error
    */
   public static void setStatus(Exchange exchange, ProcessEntity.Status status)
       throws IllegalArgumentException {
     setHeader(exchange, Header.CUSTOM_HEADER_STATUS, status.name());
+  }
+
+  /**
+   * Checks if the given header key and value represent a custom header.
+   * A custom header is identified by:
+   * <ul>
+   *   <li>A non-blank header key</li>
+   *   <li>A non-null header value</li>
+   *   <li>A non-blank header value (when converted to CharSequence)</li>
+   *   <li>The header key starting with the custom pattern prefix</li>
+   * </ul>
+   *
+   * @param headerKey   the header key to check (can be null)
+   * @param headerValue the header value to check (can be null)
+   * @return true if the header meets all custom header criteria, false otherwise
+   */
+  public static boolean isCustomHeader(@Nullable String headerKey, @Nullable Object headerValue) {
+    return StringUtils.isNotBlank(headerKey)
+        && headerValue instanceof String
+        && StringUtils.isNotBlank((String) headerValue)
+        && headerKey.startsWith(CUSTOM_PATTERN);
   }
 
   /**
