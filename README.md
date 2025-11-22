@@ -42,3 +42,7 @@ The available profiles are:
 - ✅ActiveMQ handles message queuing and delivery efficiently.
 - ✅Redis locked operations ensure data consistency across instances.
 - ✅Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
+
+
+Usage of **spring-boot-starter-opentelemetry** to support observability for Native build
+Need to update properties before usage in production (opentelemetry, security, ...)

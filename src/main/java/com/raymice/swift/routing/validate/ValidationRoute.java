@@ -16,8 +16,8 @@ import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.exception.UnsupportedException;
 import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
-import com.raymice.swift.utils.ActiveMqUtils;
 import com.raymice.swift.tracing.CustomSpan;
+import com.raymice.swift.utils.ActiveMqUtils;
 import com.raymice.swift.utils.StringUtils;
 import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
@@ -98,8 +98,7 @@ public class ValidationRoute extends DefaultRoute {
       // Check message type (MX)
       // Use MxSwiftMessage for performance
       // https://dev.prowidesoftware.com/latest/open-source/iso20022/iso20022-parser/
-      try (CustomSpan _ = new CustomSpan(tracer, "mx-parse", exchange))
-      {
+      try (CustomSpan _ = new CustomSpan(tracer, "mx-parse", exchange)) {
         MxSwiftMessage msg = MxSwiftMessage.parse(xml);
 
         // Set MX_ID header
