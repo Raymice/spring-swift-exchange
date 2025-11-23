@@ -27,7 +27,6 @@ class ActuatorDevTests {
   private final String path = "/actuator";
 
   @Autowired private MockMvc mockMvc;
-
   @Container private static Containers containers = new Containers();
 
   @Order(1)

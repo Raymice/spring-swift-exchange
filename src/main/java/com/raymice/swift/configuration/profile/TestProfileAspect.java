@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.configuration.profile;
 
+import java.util.Arrays;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,11 +28,6 @@ public class TestProfileAspect {
   }
 
   private boolean isTestProfileActive() {
-    for (String profile : environment.getActiveProfiles()) {
-      if ("test".equals(profile)) {
-        return true;
-      }
-    }
-    return false;
+    return Arrays.asList(environment.getActiveProfiles()).contains("test");
   }
 }

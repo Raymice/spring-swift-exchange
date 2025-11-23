@@ -5,6 +5,7 @@ import static com.raymice.swift.utils.CamelUtils.getJMSMessageId;
 import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.getQueueName;
 
+import com.raymice.swift.configuration.mdc.MethodWithMdcContext;
 import com.raymice.swift.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -20,6 +21,7 @@ import org.apache.camel.impl.event.ExchangeSentEvent;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
 import org.apache.camel.util.TimeUtils;
+import org.springframework.stereotype.Service;
 
 /**
  * Event notifier implementation for auditing Camel exchanges.
@@ -42,6 +44,7 @@ import org.apache.camel.util.TimeUtils;
  * @see ExchangeCompletedEvent
  */
 @Slf4j
+@Service
 public class AuditEventNotifier extends EventNotifierSupport {
 
   @Override
@@ -52,6 +55,7 @@ public class AuditEventNotifier extends EventNotifierSupport {
     setIgnoreServiceEvents(true);
   }
 
+  @MethodWithMdcContext
   @Override
   public void notify(CamelEvent event) {
     switch (event) {
@@ -60,10 +64,13 @@ public class AuditEventNotifier extends EventNotifierSupport {
         final String processId = StringUtils.unknownIfBlank(getProcessId(exchange));
 
         if (isInFileExchange(exchange)) {
+
           final String path =
               ((GenericFileMessage<?>) exchange.getIn()).getGenericFile().getAbsoluteFilePath();
           log.debug("📥 Received file (processId={} path={})", processId, path);
+
         } else if (isInActiveMQExchange(exchange)) {
+
           final String queueName = getQueueName(exchange);
           final String messageId = getJMSMessageId(exchange);
           log.debug(
@@ -79,9 +86,12 @@ public class AuditEventNotifier extends EventNotifierSupport {
         final String processId = getProcessId(exchange);
 
         if (isOutFileExchange(sendingEvent)) {
+
           final String path = ((FileEndpoint) sendingEvent.getEndpoint()).getFile().getPath();
           log.debug("📤 Sending file (processId={} path={})", processId, path);
+
         } else if (isOutActiveMQExchange(sendingEvent)) {
+
           final String queueName =
               ((ActiveMQQueueEndpoint) sendingEvent.getEndpoint()).getDestinationName();
           log.debug("📤 Sending ActiveMQ message (processId={} queue={})", processId, queueName);
@@ -94,9 +104,12 @@ public class AuditEventNotifier extends EventNotifierSupport {
         final String processId = getProcessId(exchange);
 
         if (isOutFileExchange(sentEvent)) {
+
           final String path = ((FileEndpoint) sentEvent.getEndpoint()).getFile().getPath();
           log.debug("✔️File sent in {} (processId={} path={})", timeTaken, processId, path);
+
         } else if (isOutActiveMQExchange(sentEvent)) {
+
           final String queueName =
               ((ActiveMQQueueEndpoint) sentEvent.getEndpoint()).getDestinationName();
           log.debug(

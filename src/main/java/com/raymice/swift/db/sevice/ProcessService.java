@@ -1,6 +1,8 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.db.sevice;
 
+import com.raymice.swift.configuration.mdc.MdcService;
+import com.raymice.swift.configuration.mdc.MethodWithMdcContext;
 import com.raymice.swift.configuration.profile.TestProfileOnly;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
@@ -24,6 +26,7 @@ public class ProcessService {
 
   private final ProcessRepo processRepo;
   private final Tracer tracer;
+  private final MdcService mdcService;
 
   /**
    * Create a new process record in the database
@@ -42,7 +45,11 @@ public class ProcessService {
     process.setUpdatedAt(LocalDateTime.now());
 
     ProcessEntity savedProcess = processRepo.save(process);
+
+    mdcService.setProcessId(String.valueOf(savedProcess.getId()));
     log.info("💾Process with id={} saved successfully (file='{}')", savedProcess.getId(), name);
+    mdcService.clear();
+
     return savedProcess;
   }
 
@@ -67,6 +74,7 @@ public class ProcessService {
    * @param exchange  Camel Exchange
    * @param newStatus the new status to set
    */
+  @MethodWithMdcContext
   @NewSpan(name = "update-process-status")
   public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
       throws Exception {
