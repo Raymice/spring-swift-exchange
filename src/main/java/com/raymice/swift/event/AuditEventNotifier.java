@@ -5,7 +5,7 @@ import static com.raymice.swift.utils.CamelUtils.getJMSMessageId;
 import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.getQueueName;
 
-import com.raymice.swift.configuration.mdc.MethodWithMdcContext;
+import com.raymice.swift.configuration.mdc.annotation.ExchangeMDC;
 import com.raymice.swift.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -55,7 +55,7 @@ public class AuditEventNotifier extends EventNotifierSupport {
     setIgnoreServiceEvents(true);
   }
 
-  @MethodWithMdcContext
+  @ExchangeMDC
   @Override
   public void notify(CamelEvent event) {
     switch (event) {

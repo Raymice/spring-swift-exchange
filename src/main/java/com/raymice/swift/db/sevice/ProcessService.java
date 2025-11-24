@@ -2,14 +2,13 @@
 package com.raymice.swift.db.sevice;
 
 import com.raymice.swift.configuration.mdc.MdcService;
-import com.raymice.swift.configuration.mdc.MethodWithMdcContext;
+import com.raymice.swift.configuration.mdc.annotation.ExchangeMDC;
+import com.raymice.swift.configuration.opentelemetry.annotation.ExchangeSpan;
 import com.raymice.swift.configuration.profile.TestProfileOnly;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
 import com.raymice.swift.exception.WorkflowStatusException;
 import com.raymice.swift.utils.CamelUtils;
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.annotation.NewSpan;
 import jakarta.validation.constraints.NotNull;
 import java.rmi.UnexpectedException;
 import java.time.LocalDateTime;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 public class ProcessService {
 
   private final ProcessRepo processRepo;
-  private final Tracer tracer;
   private final MdcService mdcService;
 
   /**
@@ -35,7 +33,6 @@ public class ProcessService {
    * @param payload file content
    * @return the saved ProcessEntity
    */
-  @NewSpan(name = "create-process")
   public ProcessEntity createProcess(String name, String payload) {
     ProcessEntity process = new ProcessEntity();
     process.setName(name);
@@ -74,8 +71,8 @@ public class ProcessService {
    * @param exchange  Camel Exchange
    * @param newStatus the new status to set
    */
-  @MethodWithMdcContext
-  @NewSpan(name = "update-process-status")
+  @ExchangeMDC
+  @ExchangeSpan(name = "update-process-status")
   public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
       throws Exception {
 

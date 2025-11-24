@@ -9,17 +9,16 @@ import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.processor.UpdateStatusProcessor;
 import com.raymice.swift.routing.DefaultRoute;
 import com.raymice.swift.utils.ActiveMqUtils;
-import io.micrometer.tracing.Tracer;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class ValidationRoute extends DefaultRoute {
 
-  @Autowired private Tracer tracer;
-  @Autowired private ValidationService validationService;
+  private final ValidationRouteService validationRouteService;
 
   @Override
   public void configure() {
@@ -34,14 +33,14 @@ public class ValidationRoute extends DefaultRoute {
     // Take messages from ActiveMQ queue {{app.routing.queue.input}}, validate and route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
-        .process(validationService::parseAndValidate)
+        .process(validationRouteService::parseAndValidate)
         .choice()
         .when(header(Header.CUSTOM_HEADER_MX_ID).isEqualTo(PACS_008_001_08))
-        .process(validationService::logProcessor)
+        .process(validationRouteService::logProcessor)
         .process(new UpdateStatusProcessor(getProcessService(), ProcessEntity.Status.VALIDATED))
         .to(outputQueueUri) // Forward to next queue
         .otherwise()
-        .process(validationService::unsupportedProcessor)
+        .process(validationRouteService::unsupportedProcessor)
         .endChoice()
         .end();
   }

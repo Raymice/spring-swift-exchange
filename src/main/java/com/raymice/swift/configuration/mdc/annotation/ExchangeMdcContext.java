@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.configuration.mdc;
+package com.raymice.swift.configuration.mdc.annotation;
 
+import com.raymice.swift.configuration.mdc.MdcService;
 import com.raymice.swift.utils.CamelUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,24 +21,29 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @AllArgsConstructor
-public class MdcContextInitialiser {
+public class ExchangeMdcContext {
 
   private final MdcService mdcService;
 
-  @Around("@annotation(MethodWithMdcContext)")
+  @Around("@annotation(ExchangeMDC)")
   public Object setMDC(ProceedingJoinPoint joinPoint) throws Throwable {
     // Add MDC fields
-    setMdcContextForMethod(joinPoint);
+    setMdcWithExchange(joinPoint);
 
-    // Execute method
-    Object proceed = joinPoint.proceed();
+    final Object proceed;
 
-    // Clear all MDC fields
-    mdcService.clear();
+    try {
+      // Execute method
+      proceed = joinPoint.proceed();
+    } finally {
+      // Clear all MDC fields
+      mdcService.clear();
+    }
+
     return proceed;
   }
 
-  private void setMdcContextForMethod(ProceedingJoinPoint joinPoint) {
+  private void setMdcWithExchange(ProceedingJoinPoint joinPoint) {
     Object[] args = joinPoint.getArgs();
 
     for (Object arg : args) {
