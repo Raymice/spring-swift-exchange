@@ -48,8 +48,7 @@ public class FileRouteService {
     // Add status in header
     setStatus(exchange, process.getStatus());
 
-    log.info(
-        "📥 Receiving file '{}' from: {} (processId={}})", originalFileName, inputPath, processId);
+    log.info("📥 Receiving file '{}' from: {}", originalFileName, inputPath);
 
     // Add Process ID to filename to ensure uniqueness
     final String newFileName = FileUtils.addProcessId(originalFileName, processId);
@@ -69,7 +68,7 @@ public class FileRouteService {
   public void successProcessor(Exchange exchange) {
     final String processId = getProcessId(exchange);
     final String fileName = getOriginalFileName(exchange);
-    log.info("📤 Sending file to ActiveMQ: '{}' (processId={})", fileName, processId);
+    log.info("📤 Sending file to ActiveMQ: '{}'", fileName);
   }
 
   /**

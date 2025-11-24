@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @AllArgsConstructor
-public class ExchangeSpanContext {
+public class ExchangeSpanAspect {
 
   private final Tracer tracer;
 

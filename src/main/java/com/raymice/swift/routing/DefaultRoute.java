@@ -2,6 +2,7 @@
 package com.raymice.swift.routing;
 
 import com.raymice.swift.configuration.ApplicationConfig;
+import com.raymice.swift.configuration.mdc.MdcService;
 import com.raymice.swift.db.sevice.ProcessService;
 import com.raymice.swift.exception.MalformedXmlException;
 import com.raymice.swift.exception.UnsupportedException;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class DefaultRoute extends RouteBuilder {
 
+  @Autowired private MdcService mdcService;
   @Autowired private ProcessService processService;
   @Autowired private ApplicationConfig applicationConfig;
 
@@ -69,7 +71,7 @@ public abstract class DefaultRoute extends RouteBuilder {
             UnexpectedException.class,
             NullPointerException.class)
         .handled(true)
-        .process(new ErrorProcessor(processService))
+        .process(new ErrorProcessor(processService, mdcService))
         .multicast()
         .to(deadLetterQueueEndpoint)
         .to(errorFileEndpoint);
@@ -79,6 +81,7 @@ public abstract class DefaultRoute extends RouteBuilder {
             org.springframework.dao.DataAccessResourceFailureException.class,
             org.springframework.orm.jpa.JpaSystemException.class,
             org.springframework.transaction.CannotCreateTransactionException.class)
+        // Unlimited retry
         .maximumRedeliveries(-1);
 
     // Retryable exceptions
@@ -91,7 +94,7 @@ public abstract class DefaultRoute extends RouteBuilder {
         .maximumRedeliveryDelay(redelivery.getMaximumRedeliveryDelay())
         .useCollisionAvoidance()
         .handled(true)
-        .process(new ErrorProcessor(processService))
+        .process(new ErrorProcessor(processService, mdcService))
         .multicast()
         .to(deadLetterQueueEndpoint)
         .to(errorFileEndpoint);

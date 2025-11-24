@@ -2,7 +2,6 @@
 package com.raymice.swift.routing.validate;
 
 import static com.raymice.swift.utils.CamelUtils.getMxId;
-import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.getQueueName;
 import static com.raymice.swift.utils.CamelUtils.setMxId;
 import static com.raymice.swift.utils.XmlUtils.isXMLWellFormed;
@@ -31,13 +30,9 @@ public class ValidationRouteService {
   @ExchangeSpan(name = "parse-and-validate")
   public void parseAndValidate(Exchange exchange) throws Exception {
 
-    final String processId = getProcessId(exchange);
     final String queueName = getQueueName(exchange);
 
-    log.info(
-        "🔍 Validating well formed message from ActiveMQ (processId={}, queue={})",
-        processId,
-        queueName);
+    log.info("🔍 Validating well formed message from ActiveMQ (queue={})", queueName);
 
     String xml = exchange.getIn().getBody(String.class);
 
@@ -65,11 +60,9 @@ public class ValidationRouteService {
 
   @ExchangeMDC
   public void logProcessor(Exchange exchange) {
-    final String processId = getProcessId(exchange);
     final String mxID = getMxId(exchange);
-
-    log.info("✅ Message is an {} (processId={})", mxID, processId);
-    log.info("📤 Sending message to PACS.008 queue (processId={})", processId);
+    log.info("✅ Message is an {}", mxID);
+    log.info("📤 Sending message to PACS.008 queue");
   }
 
   public void unsupportedProcessor(Exchange exchange) throws UnsupportedException {

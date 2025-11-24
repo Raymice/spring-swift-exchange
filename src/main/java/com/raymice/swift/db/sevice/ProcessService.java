@@ -4,7 +4,7 @@ package com.raymice.swift.db.sevice;
 import com.raymice.swift.configuration.mdc.MdcService;
 import com.raymice.swift.configuration.mdc.annotation.ExchangeMDC;
 import com.raymice.swift.configuration.opentelemetry.annotation.ExchangeSpan;
-import com.raymice.swift.configuration.profile.TestProfileOnly;
+import com.raymice.swift.configuration.profile.annotation.TestProfileOnly;
 import com.raymice.swift.db.entity.ProcessEntity;
 import com.raymice.swift.db.repository.ProcessRepo;
 import com.raymice.swift.exception.WorkflowStatusException;

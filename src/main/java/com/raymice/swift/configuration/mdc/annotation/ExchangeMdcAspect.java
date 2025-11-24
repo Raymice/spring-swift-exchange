@@ -6,11 +6,7 @@ import com.raymice.swift.utils.CamelUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
-import org.apache.camel.impl.event.ExchangeCompletedEvent;
-import org.apache.camel.impl.event.ExchangeCreatedEvent;
-import org.apache.camel.impl.event.ExchangeSendingEvent;
-import org.apache.camel.impl.event.ExchangeSentEvent;
-import org.apache.camel.spi.CamelEvent;
+import org.apache.camel.impl.event.AbstractExchangeEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 @AllArgsConstructor
-public class ExchangeMdcContext {
+public class ExchangeMdcAspect {
 
   private final MdcService mdcService;
 
@@ -45,33 +41,22 @@ public class ExchangeMdcContext {
 
   private void setMdcWithExchange(ProceedingJoinPoint joinPoint) {
     Object[] args = joinPoint.getArgs();
+    Exchange camelExchange = null;
 
     for (Object arg : args) {
       if (arg instanceof Exchange exchange) {
-        final String processId = CamelUtils.getProcessId(exchange);
+        camelExchange = exchange;
+        break;
+      } else if (arg instanceof AbstractExchangeEvent camelEvent) {
+        camelExchange = camelEvent.getExchange();
+        break;
+      }
+    }
 
+    if (camelExchange != null) {
+      final String processId = CamelUtils.getProcessId(camelExchange);
+      if (StringUtils.isNotBlank(processId)) {
         mdcService.setProcessId(processId);
-        break;
-
-      } else if (arg instanceof CamelEvent camelEvent) {
-        String processId = null;
-
-        switch (camelEvent) {
-          case ExchangeCreatedEvent createdEvent ->
-              processId = CamelUtils.getProcessId(createdEvent.getExchange());
-          case ExchangeSendingEvent sendingEvent ->
-              processId = CamelUtils.getProcessId(sendingEvent.getExchange());
-          case ExchangeSentEvent sentEvent ->
-              processId = CamelUtils.getProcessId(sentEvent.getExchange());
-          case ExchangeCompletedEvent completedEvent ->
-              processId = CamelUtils.getProcessId(completedEvent.getExchange());
-          default -> {}
-        }
-
-        if (StringUtils.isNotBlank(processId)) {
-          mdcService.setProcessId(processId);
-        }
-        break;
       }
     }
   }

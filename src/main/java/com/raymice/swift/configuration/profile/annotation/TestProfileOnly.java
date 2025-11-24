@@ -1,5 +1,5 @@
 /* Raymice - https://github.com/Raymice - 2025 */
-package com.raymice.swift.configuration.profile;
+package com.raymice.swift.configuration.profile.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
