@@ -138,7 +138,7 @@ public class End2EndTest {
 
     final String testFileName = "pacs.008.001.08.xml";
     final int iterations = 100;
-    final Duration expectedDuration = Duration.of(8, java.time.temporal.ChronoUnit.SECONDS);
+    final Duration expectedDuration = Duration.of(5, java.time.temporal.ChronoUnit.SECONDS);
 
     for (int i = 0; i < iterations; i++) {
       String testFilePath = "src/test/resources/mx/%s".formatted(testFileName);
@@ -187,17 +187,17 @@ public class End2EndTest {
 
   @Test
   void shutdownActiveMq(CapturedOutput output) throws Exception {
-    testContainerShutdown(output, Containers.ACTIVEMQ_IMAGE, 100, 4000);
+    testContainerShutdown(output, Containers.ACTIVEMQ_IMAGE, 100, 2000);
   }
 
   @Test
   void shutdownRedis(CapturedOutput output) throws Exception {
-    testContainerShutdown(output, Containers.REDIS_IMAGE, 1000, 5000);
+    testContainerShutdown(output, Containers.REDIS_IMAGE, 1000, 2000);
   }
 
   @Test
   void shutdownPostgres(CapturedOutput output) throws Exception {
-    testContainerShutdown(output, Containers.POSTGRES_IMAGE, 100, 4000);
+    testContainerShutdown(output, Containers.POSTGRES_IMAGE, 100, 2000);
   }
 
   /**

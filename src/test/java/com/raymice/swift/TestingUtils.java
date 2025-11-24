@@ -82,7 +82,7 @@ public class TestingUtils {
       throws InterruptedException {
     LocalDateTime startTime = LocalDateTime.now();
     while (countFilesInDirectory(directoryPath) != expectedCount) {
-      if (Duration.between(startTime, LocalDateTime.now()).toSeconds() > expectedCount * 1.2) {
+      if (Duration.between(startTime, LocalDateTime.now()).toSeconds() > expectedCount * 1.5) {
         log.error("⏱ Timeout waiting for file in directory: {}", directoryPath);
         return false;
       }

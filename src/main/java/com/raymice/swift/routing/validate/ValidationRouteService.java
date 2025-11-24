@@ -6,7 +6,8 @@ import static com.raymice.swift.utils.CamelUtils.getQueueName;
 import static com.raymice.swift.utils.CamelUtils.setMxId;
 import static com.raymice.swift.utils.XmlUtils.isXMLWellFormed;
 
-import com.prowidesoftware.swift.model.MxSwiftMessage;
+import com.prowidesoftware.swift.model.MxId;
+import com.prowidesoftware.swift.model.mx.MxParseUtils;
 import com.raymice.swift.configuration.mdc.annotation.ExchangeMDC;
 import com.raymice.swift.configuration.opentelemetry.annotation.ExchangeSpan;
 import com.raymice.swift.exception.MalformedXmlException;
@@ -14,6 +15,7 @@ import com.raymice.swift.exception.UnsupportedException;
 import com.raymice.swift.tracing.CustomSpan;
 import com.raymice.swift.utils.StringUtils;
 import io.micrometer.tracing.Tracer;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -47,14 +49,10 @@ public class ValidationRouteService {
     }
 
     // Check message type (MX)
-    // Use MxSwiftMessage for performance
-    // https://dev.prowidesoftware.com/latest/open-source/iso20022/iso20022-parser/
     try (CustomSpan _ = new CustomSpan(tracer, "mx-parse", exchange)) {
-      MxSwiftMessage msg = MxSwiftMessage.parse(xml);
-
+      MxId id = extractMxId(xml);
       // Set MX_ID header
-      String mxId = StringUtils.unknownIfBlank(msg.getMxId().id());
-      setMxId(exchange, mxId);
+      setMxId(exchange, StringUtils.unknownIfBlank(id.id()));
     }
   }
 
@@ -68,5 +66,26 @@ public class ValidationRouteService {
   public void unsupportedProcessor(Exchange exchange) throws UnsupportedException {
     final String mxID = getMxId(exchange);
     throw new UnsupportedException(String.format("Message is not a supported type='%s'", mxID));
+  }
+
+  /**
+   * Extracts the MX ID from the given XML string.
+   *
+   * <p>This method parses the XML document to identify the message type and version
+   * according to the ISO 20022 standard. It uses the MxParseUtils utility class
+   * to detect the message identifier which typically follows the pattern
+   * "pacs.002.001.10" in the XML namespace declaration.</p>
+   *
+   * <p>Example XML structure being parsed:
+   * <pre>{@code
+   * <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+   * }</pre></p>
+   *
+   * @param xml the XML string to parse for the MX ID
+   * @return the detected MxId object, or null if no identifier could be determined
+   */
+  private MxId extractMxId(String xml) {
+    Optional<MxId> detectedIdentifier = MxParseUtils.identifyMessage(xml);
+    return detectedIdentifier.orElse(null);
   }
 }
