@@ -46,33 +46,7 @@ services:
       - "4317:4317"
       - "4318:4318"
 
-  swift:
-    #container_name: swift_replica_1
-    restart: unless-stopped
-    image: docker.io/library/swift:0.0.2-SNAPSHOT
-    deploy:
-      mode: replicated
-      replicas: 3 # Number of replicas you want to run
-      restart_policy:
-        condition: on-failure
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/swiftdb
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME} # from .env file
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD} # from .env file
-      SPRING_ACTIVEMQ_BROKER_URL: failover:(tcp://activemq:61616)?startupMaxReconnectAttempts=-1
-      SPRING_REDIS_HOST: redis
-      MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/logs
-      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/traces
-      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://grafana-lgtm:4318/v1/metrics
-    ports:
-      - "8080-8085:8080"
-    volumes:
-      - /tmp:/tmp
-    depends_on:
-      - activemq
-      - redis
-      - postgres
-      - grafana-lgtm
+
 
 volumes:
   activemq_data:

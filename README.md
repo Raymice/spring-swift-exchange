@@ -47,12 +47,36 @@ The available profiles are:
 Usage of **spring-boot-starter-opentelemetry** to support observability for Native build
 Need to update properties before usage in production (opentelemetry, security, ...)
 
-## How to build the docker image
+## How to build the docker image (not native)
+
 ```bash
 ./mvnw spring-boot:build-image -Dmaven.test.skip=true
 ```
 
-## How to run everything in docker
+## How to deploy the dependency stack
+
+* Use script
 ```bash
-docker-compose up
+./scripts/deploy-dependency-stack.sh
+```
+* Run manual command
+```bash
+docker-compose docker-compose.yml up -d
+```
+
+## How to deploy the full stack (include the app)
+
+* Use script (build of app required before)
+```bash
+./scripts/deploy-full-stack.sh
+```
+
+* Use script including the build of the app
+```bash
+./scripts/build-and-deploy-full-stack.sh
+```
+
+* Run manual command (build of app required before)
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
 ```

@@ -205,6 +205,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <!--Override name of docker image-->
+                        <name>spring-swift</name>
+                    </image>
+                </configuration>
 			</plugin>
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
