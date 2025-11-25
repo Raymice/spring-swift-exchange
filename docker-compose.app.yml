@@ -25,3 +25,5 @@ services:
       - redis
       - postgres
       - grafana-lgtm
+    networks:
+      - application_network

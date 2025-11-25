@@ -1,4 +1,5 @@
 services:
+
   activemq:
     container_name: activemq
     image: apache/activemq-classic:6.1.7
@@ -14,6 +15,9 @@ services:
       - activemq_data:/opt/apache-activemq/data
       # Optional: Mount custom configuration files if needed
       # - ./conf/activemq.xml:/opt/apache-activemq/conf/activemq.xml
+    networks:
+      - application_network
+
   redis:
     container_name: redis
     image: redis:8.2.2
@@ -22,6 +26,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - application_network
 
   postgres:
     container_name: postgres
@@ -35,6 +41,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - application_network
 
   # Loki, Grafana, Tempo, and Mimir/Prometheus
   grafana-lgtm:
@@ -45,8 +53,11 @@ services:
       - "3000:3000" # UI
       - "4317:4317"
       - "4318:4318"
+    networks:
+      - application_network
 
-
+networks:
+  application_network:
 
 volumes:
   activemq_data:
