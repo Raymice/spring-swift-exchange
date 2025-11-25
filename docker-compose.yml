@@ -1,0 +1,80 @@
+services:
+  activemq:
+    container_name: activemq
+    image: apache/activemq-classic:6.1.7
+    restart: unless-stopped
+    ports:
+      - "8161:8161" # Web console
+      - "61616:61616" # OpenWire protocol
+    environment:
+      # This is crucial for the web console to be accessible from outside the container
+      - ACTIVEMQ_OPTS=-Djetty.host=0.0.0.0 -Djava.util.logging.config.file=logging.properties -Djava.security.auth.login.config=/opt/apache-activemq/conf/login.config
+    volumes:
+      # Optional: Persist ActiveMQ data (e.g., KahaDB)
+      - activemq_data:/opt/apache-activemq/data
+      # Optional: Mount custom configuration files if needed
+      # - ./conf/activemq.xml:/opt/apache-activemq/conf/activemq.xml
+  redis:
+    container_name: redis
+    image: redis:8.2.2
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    container_name: postgres
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME} # from .env file
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD} # from .env file
+      POSTGRES_DB: swiftdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Loki, Grafana, Tempo, and Mimir/Prometheus
+  grafana-lgtm:
+    container_name: grafana-lgtm
+    restart: unless-stopped
+    image: "grafana/otel-lgtm:0.11.17"
+    ports:
+      - "3000:3000" # UI
+      - "4317:4317"
+      - "4318:4318"
+
+  swift:
+    #container_name: swift_replica_1
+    restart: unless-stopped
+    image: docker.io/library/swift:0.0.2-SNAPSHOT
+    deploy:
+      mode: replicated
+      replicas: 3 # Number of replicas you want to run
+      restart_policy:
+        condition: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/swiftdb
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME} # from .env file
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD} # from .env file
+      SPRING_ACTIVEMQ_BROKER_URL: failover:(tcp://activemq:61616)?startupMaxReconnectAttempts=-1
+      SPRING_REDIS_HOST: redis
+      MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/logs
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/traces
+      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://grafana-lgtm:4318/v1/metrics
+    ports:
+      - "8080-8085:8080"
+    volumes:
+      - /tmp:/tmp
+    depends_on:
+      - activemq
+      - redis
+      - postgres
+      - grafana-lgtm
+
+volumes:
+  activemq_data:
+  redis_data:
+  postgres_data:
