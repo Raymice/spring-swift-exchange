@@ -209,6 +209,8 @@
                     <image>
                         <!--Override name of docker image-->
                         <name>spring-swift</name>
+                        <!--Reduce the image size-->
+                        <builder>bellsoft/buildpacks.builder:musl</builder>
                     </image>
                 </configuration>
 			</plugin>

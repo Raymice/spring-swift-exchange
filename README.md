@@ -1,8 +1,6 @@
 
 
 # Start running the Project
-
-This project is a Spring Boot application generated with Spring Initializr.
 To run the application, use the following command:
 
 ```bash
@@ -20,6 +18,7 @@ This project requires the following dependencies:
 - ActiveMQ classic 6.1.7
 - Redis 8.2.2
 - Postgres 17-alpine
+- Grafana-lgtm  0.11.17
 
 
 ## Profiles
@@ -43,6 +42,9 @@ The available profiles are:
 - ✅Redis locked operations ensure data consistency across instances.
 - ✅Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
 
+
+## Observability
+// TODO explain
 
 Usage of **spring-boot-starter-opentelemetry** to support observability for Native build
 Need to update properties before usage in production (opentelemetry, security, ...)
@@ -80,3 +82,10 @@ docker-compose docker-compose.yml up -d
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
 ```
+
+## Things to evaluate/change before production
+// TODO: Add the list
+- Add check on the health of the app (/actuator/health)
+
+## How to optimize non-native app
+https://bell-sw.com/blog/how-to-use-buildpacks-with-spring-boot/#mcetoc_1i991jvbb2s
