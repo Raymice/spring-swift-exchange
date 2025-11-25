@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.raymice</groupId>
 	<artifactId>swift</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>swift</name>
 	<description>Demo project for SWIFT message processing</description>
 	<url/>
@@ -45,6 +45,14 @@
 			<artifactId>camel-spring-boot-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
+<!--        Not working with grafana-lgtm -->
+<!--        OtlpLoggingConfigurations$Exporters required a single bean, but 2 were found-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-docker-compose</artifactId>-->
+<!--            <version>4.0.0-M2</version>-->
+<!--            <optional>true</optional>-->
+<!--        </dependency>-->
 
         <!-- Micrometer for metrics -->
         <dependency>

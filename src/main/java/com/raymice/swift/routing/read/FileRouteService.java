@@ -3,7 +3,6 @@ package com.raymice.swift.routing.read;
 
 import static com.raymice.swift.utils.CamelUtils.getFileName;
 import static com.raymice.swift.utils.CamelUtils.getOriginalFileName;
-import static com.raymice.swift.utils.CamelUtils.getProcessId;
 import static com.raymice.swift.utils.CamelUtils.setFileName;
 import static com.raymice.swift.utils.CamelUtils.setOriginalFileName;
 import static com.raymice.swift.utils.CamelUtils.setProcessId;
@@ -66,7 +65,6 @@ public class FileRouteService {
    */
   @ExchangeMDC
   public void successProcessor(Exchange exchange) {
-    final String processId = getProcessId(exchange);
     final String fileName = getOriginalFileName(exchange);
     log.info("📤 Sending file to ActiveMQ: '{}'", fileName);
   }
