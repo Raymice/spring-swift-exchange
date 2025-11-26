@@ -1,91 +1,248 @@
+# **Spring SWIFT Exchange**
 
+*A boilerplate Java application for processing incoming and outgoing SWIFT messages in a banking context.*
 
-# Start running the Project
-To run the application, use the following command:
+---
+
+## **📌 Table of Contents**
+- [Technologies Used](#-technologies-used)
+- [Requirements](#-requirements)
+- [Build Instructions](#-build-instructions)
+- [Running the Application](#-running-the-application)
+- [Deploy the Application](#-deploy-the-application)
+- [External Dependencies](#-external-dependencies)
+- [Configuration](#-configuration)
+- [Performance](#-performance)
+- [Scalability](#-scalability)
+- [Resilience](#-resilience)
+- [Observability](#-observability)
+
+---
+
+## **🛠 Technologies Used**
+
+List all the technologies, frameworks, and tools used in the project.
+
+| Category              | Technologies/Tools                                                                  |
+|-----------------------|-------------------------------------------------------------------------------------|
+| **Backend**           | Java 25, Spring Boot 4, Spring Data JPA, Apache Camel                               |
+| **Database**          | PostgreSQL                                                                          |
+| **Distributed cache** | Redis                                                                      |
+| **Message broker**    | ActiveMQ classic                                                                    |
+| **Build Tool**        | Maven                                                                               |
+| **Testing**           | JUnit 5, Mockito, Testcontainers                                                    |
+| **Logging**           | Logback/Slf4j                                                                       |
+| **Containerization**  | Docker, Docker Compose                                                              |
+| **CI/CD**             | N/A                                                                                 |
+| **Monitoring**        | Prometheus, Grafana, Loki, Tempo                                                    |
+
+---
+
+## **📋 Requirements**
+Prerequisites for building and running the application:
+
+- **Java**: JDK 25 or later, GraalVM 25+ (if you plan to build native images)
+- **Build Tool**: Maven 3.9.11+
+- **Database**: PostgreSQL 17-alpine
+- **Distributed cache**: Redis 8.2.2
+- **Message broker**: ActiveMQ classic 6.1.7
+- **Monitoring**: Grafana-lgtm  0.11.17
+- **Docker**: Docker 29.0.3+
+- **Environment Variables**:
+  * `SPRING_DATASOURCE_USERNAME`
+  * `SPRING_DATASOURCE_PASSWORD`
+
+---
+
+## **🔨 Build Instructions**
+
+### 1 - Build for development
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-``` 
+# Build the project
+./mvnw clean install -Dmaven.test.skip=true
+```
 
-
-## Application Build Requirements
-- Java 21 or higher
-- Maven 3.9.11 or higher
-- GraalVM 25+ (if you plan to build native images)
-
-## Application Required Dependencies
-This project requires the following dependencies:
-- ActiveMQ classic 6.1.7
-- Redis 8.2.2
-- Postgres 17-alpine
-- Grafana-lgtm  0.11.17
-
-
-## Profiles
-This project uses Spring profiles to manage different configurations for various environments.
-The available profiles are:
-- `dev`: Development environment
-- `test`: Testing environment
-- `prod`: Production environment
-
-## Configuration
-// TODO: Add configuration details here
-
-## How it's working
-// TODO: Add explanation of how the application works here
-
-## Performances and Scalability
-- ✅The application is designed to be stateless, allowing for easy scaling and load balancing.
-- ✅Multiple instances of the application can run concurrently to handle increased load.
-- ✅Usage of virtual threads (Java 21) to improve concurrency and resource utilization.
-- ✅ActiveMQ handles message queuing and delivery efficiently.
-- ✅Redis locked operations ensure data consistency across instances.
-- ✅Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
-
-
-## Observability
-// TODO explain
-
-Usage of **spring-boot-starter-opentelemetry** to support observability for Native build
-Need to update properties before usage in production (opentelemetry, security, ...)
-
-## How to build the docker image (not native)
+### 2 - Build for production
 
 ```bash
+# Build the docker image (non native)
 ./mvnw spring-boot:build-image -Dmaven.test.skip=true
 ```
 
-## How to deploy the dependency stack
+---
 
-* Use script
+## **▶️ Running the Application**
+How to run the application locally:
+
+### 1 - Deploy the dependencies
+
 ```bash
+# Script command
 ./scripts/deploy-dependency-stack.sh
 ```
-* Run manual command
+
+OR
+
 ```bash
+# Manual command
 docker-compose docker-compose.yml up -d
 ```
 
-## How to deploy the full stack (include the app)
+### 2 - Run the application
 
-* Use script (build of app required before)
+```bash
+# Run the application
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+---
+
+## **🚀 Deploy the Application**
+How to deploy the application with Docker:
+
+### Use script (build of app required before)
 ```bash
 ./scripts/deploy-full-stack.sh
 ```
 
-* Use script including the build of the app
+OR
+
+### Use script including the build of the app
 ```bash
 ./scripts/build-and-deploy-full-stack.sh
 ```
 
-* Run manual command (build of app required before)
+OR
+
+### Run manual command (build of app required before)
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
 ```
 
+---
+
+## **🔗 External Dependencies**
+List of all external services that application depends on:
+
+* **Database**: *PostgreSQL* – Stores and manages all process data.
+* **Distributed Cache**: *Redis* – Ensures idempotency and manages parallelism for Apache Camel workflows.
+* **Message Broker**: *ActiveMQ* – Facilitates the distribution and propagation of processes across the platform.
+
+---
+
+## **⚙️ Configuration**
+How to configure the application:
+
+This project uses Spring profiles to manage different configurations for various environments.
+The available profiles are:
+  - `dev`: Development environment
+  - `test`: Testing environment
+  - `prod`: Production environment
+
+### **Application Properties**: 
+
+Need to setup `application-*.properties` accordingly to your preferences
+
+### **Environment Variables**: 
+
+Required variables for Postgres
+  * `SPRING_DATASOURCE_USERNAME`
+  * `SPRING_DATASOURCE_PASSWORD`
+
+---
+
+## **📈 Performance**
+- ✅ Usage of virtual threads (Java 21) to improve concurrency and resource utilization.
+- ✅ ActiveMQ handles message queuing and delivery efficiently.
+- ✅ Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
+
+---
+
+## **🧑‍🤝‍🧑 Scalability**
+- ✅ The application is designed to be stateless, allowing for easy scaling and load balancing.
+- ✅ Multiple instances of the application can run concurrently to handle increased load.
+- ❌ Scalable database architecture using sharding and dynamic partitioning to efficiently manage high data volumes and ensure optimal performance.
+
+---
+
+## **🔄 Resilience**
+- ✅ Redis locked operations ensure data consistency across instances.
+- ✅ ActiveMQ transaction management
+- ✅ Automatic reconnection to external dependencies (Redis, Postgres, ActiveMQ)
+
+---
+
+## **🔭 Observability**
+
+Leverages the Grafana LGTM stack for comprehensive observability:
+  - **Loki** for centralized log aggregation and management,
+  - **Grafana** for unified visualization and custom dashboards,
+  - **Tempo** for distributed tracing,
+  - **Mimir/Prometheus** for metrics collection and monitoring.
+
+
+ℹ️ Usage of **spring-boot-starter-opentelemetry** to support observability for Native build.
+
+---
+
+
+
+
+
+
+
+## How it's working
+// TODO: Add explanation of how the application works here
+
+
+
 ## Things to evaluate/change before production
 // TODO: Add the list
 - Add check on the health of the app (/actuator/health)
+- Need to update properties before usage in production (opentelemetry, security, ...)
 
 ## How to optimize non-native app
 https://bell-sw.com/blog/how-to-use-buildpacks-with-spring-boot/#mcetoc_1i991jvbb2s
+
+## TODO
+* Explain Git Hook
+* Explain format code plugin
+* Explain error workflows:
+  * Unsupported files
+    * Warning log
+    * Update status of process in database
+    * Output in unsupported folder
+  * Retryable error
+    * Retry mechanism with backoff
+    * If limit is reached, act like non-retryable error
+  * Non-retryable error 
+    * Error log
+    * Update status of process in database 
+    * Output in error folder
+    * Dead letter queue
+* Explain MDC
+* Explain OpenTelemetry usages
+  * Log
+  * Metrics
+  * Tracing
+* Explore sharding & partitioning for Postgres (Citrus)
+* Explain environment variables (.env)
+* Add code coverage
+* Review all javadoc
+* Add websites references for each topic
+* Explain Native build
+  * Create dedicated dockerfile for build
+* Implement tool for volume testing (Gatling, JMeter)
+* Explain technology choices and suggest alternatives
+* Explain Grafana dashboards
+* Create sequence diagram of the workflow
+* Add security for specific actuator endpoints ?
+* Implement all SWIFT message type
+  * Include conversion
+* Create a frontend application as dashboard ?
+* Speak about configuration of ActiveMq for production
+  * node
+  * persistence
+  * storage
+* Add mention of SpringBoot 4
