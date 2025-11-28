@@ -18,6 +18,7 @@
 - [Resilience](#-resilience)
 - [Observability](#-observability)
 - [Conventions](#-conventions)
+- [TODO List](#-todo-list)
 
 ---
 
@@ -79,7 +80,11 @@ Prerequisites for building and running the application:
 
 How to run the application locally:
 
-### 1 - Deploy the dependencies
+### 1 - Create environment file
+
+Create a **.env** file with the required environment variables (see [Configuration](#-configuration))
+
+### 2 - Deploy the dependencies
 
 ```bash
 # Script command
@@ -93,7 +98,7 @@ OR
 docker-compose docker-compose.yml up -d
 ```
 
-### 2 - Run the application
+### 3 - Run the application
 
 ```bash
 # Run the application
@@ -208,63 +213,43 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 
 ---
 
+## **✅ TODO List**
 
+- Add explanation of how the application works
+- Things to evaluate/change before production
+  - Add check on the health of the app (/actuator/health)
+  - Need to update properties before usage in production (opentelemetry, security, ...)
+- Explain error workflows:
+  - Unsupported files
+    - Warning log
+    - Update status of process in database
+    - Output in unsupported folder
+  - Retryable error
+    - Retry mechanism with backoff
+    - If limit is reached, act like non-retryable error
+  - Non-retryable error
+    - Error log
+    - Update status of process in database
+    - Output in error folder
+    - Dead letter queue
+- Explain MDC
+- Explore sharding & partitioning for Postgres (Citrus)
+- Add code coverage
+- Review all javadoc
+- Add websites references for each topic
+- Explain Native build
+  - Create dedicated dockerfile for build
+- Implement tool for volume testing (Gatling, JMeter)
+- Explain technology choices and suggest alternatives
+- Explain Grafana dashboards
+- Create sequence diagram of the workflow
+- Add security for specific actuator endpoints ?
+- Implement all SWIFT message type
+  - Include conversion
+- Create a frontend application as dashboard ?
+- Speak about configuration of ActiveMq for production
+  - node
+  - persistence
+  - storage
 
-
-
-
-
-## How it's working
-// TODO: Add explanation of how the application works here
-
-
-
-## Things to evaluate/change before production
-// TODO: Add the list
-- Add check on the health of the app (/actuator/health)
-- Need to update properties before usage in production (opentelemetry, security, ...)
-
-## How to optimize non-native app
-https://bell-sw.com/blog/how-to-use-buildpacks-with-spring-boot/#mcetoc_1i991jvbb2s
-
-## TODO
-* Explain Git Hook
-* Explain format code plugin
-* Explain error workflows:
-  * Unsupported files
-    * Warning log
-    * Update status of process in database
-    * Output in unsupported folder
-  * Retryable error
-    * Retry mechanism with backoff
-    * If limit is reached, act like non-retryable error
-  * Non-retryable error 
-    * Error log
-    * Update status of process in database 
-    * Output in error folder
-    * Dead letter queue
-* Explain MDC
-* Explain OpenTelemetry usages
-  * Log
-  * Metrics
-  * Tracing
-* Explore sharding & partitioning for Postgres (Citrus)
-* Explain environment variables (.env)
-* Add code coverage
-* Review all javadoc
-* Add websites references for each topic
-* Explain Native build
-  * Create dedicated dockerfile for build
-* Implement tool for volume testing (Gatling, JMeter)
-* Explain technology choices and suggest alternatives
-* Explain Grafana dashboards
-* Create sequence diagram of the workflow
-* Add security for specific actuator endpoints ?
-* Implement all SWIFT message type
-  * Include conversion
-* Create a frontend application as dashboard ?
-* Speak about configuration of ActiveMq for production
-  * node
-  * persistence
-  * storage
-* Add mention of SpringBoot 4
+---

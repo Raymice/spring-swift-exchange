@@ -19,6 +19,7 @@
         <spotless.version>3.0.0</spotless.version>
         <lombok.version>1.18.42</lombok.version>
         <camel.version>4.14.0</camel.version>
+        <spring.fix.version>4.0.0-M2</spring.fix.version>
         <start-class>com.raymice.swift.SwiftApplication</start-class>
     </properties>
 
@@ -32,7 +33,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-            <version>4.0.0-M2</version>
+            <version>${spring.fix.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -41,7 +42,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <version>4.0.0-M2</version>
+            <version>${spring.fix.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -147,7 +148,7 @@
         <!--        <dependency>-->
         <!--            <groupId>org.springframework.boot</groupId>-->
         <!--            <artifactId>spring-boot-docker-compose</artifactId>-->
-        <!--            <version>4.0.0-M2</version>-->
+        <!--            <version>${spring.fix.version}</version>-->
         <!--            <optional>true</optional>-->
         <!--        </dependency>-->
         <!--Docker-->
