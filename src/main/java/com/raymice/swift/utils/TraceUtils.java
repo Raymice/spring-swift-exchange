@@ -8,11 +8,16 @@ import io.micrometer.tracing.Tracer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.Validate;
 
 public class TraceUtils {
 
   public static ScopedSpan createSpan(
       @NotNull Tracer tracer, @NotBlank String spanName, @NotNull Exchange exchange) {
+
+    Validate.notNull(tracer, "Tracer must not be null");
+    Validate.notBlank(spanName, "Span name must not be blank");
+    Validate.notNull(exchange, "Exchange must not be null");
 
     ScopedSpan span = tracer.startScopedSpan(spanName);
 
@@ -32,16 +37,22 @@ public class TraceUtils {
   }
 
   /**
-   * Applies OpenTelemetry naming conventions to a string by converting it to lowercase
+   * Applies OpenTelemetry naming conventions to a string by converting it to
+   * lowercase
    * and replacing underscores with dots.
    *
-   * <p>This method follows the OpenTelemetry specification which requires attribute keys
-   * to be in lowercase and use dots as separators instead of underscores.</p>
+   * <p>
+   * This method follows the OpenTelemetry specification which requires attribute
+   * keys
+   * to be in lowercase and use dots as separators instead of underscores.
+   * </p>
    *
    * @param value the input string to be transformed (must not be blank)
-   * @return the transformed string with lowercase letters and dots instead of underscores
+   * @return the transformed string with lowercase letters and dots instead of
+   *         underscores
    */
   public static String applyOpenTelemetryConv(@NotBlank String value) {
+    Validate.notBlank(value, "Value must not be blank");
     return value.toLowerCase().replaceAll("_", ".");
   }
 }

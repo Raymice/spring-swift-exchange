@@ -38,7 +38,7 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ThrowsException_ForNullQueueName() {
     String queueName = null;
-    assertThrows(IllegalArgumentException.class, () -> ActiveMqUtils.getQueueUri(queueName));
+    assertThrows(NullPointerException.class, () -> ActiveMqUtils.getQueueUri(queueName));
   }
 
   @Test

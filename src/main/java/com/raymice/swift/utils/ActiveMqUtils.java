@@ -1,7 +1,8 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.swift.utils;
 
-import org.apache.commons.lang3.StringUtils;
+import jakarta.validation.constraints.NotBlank;
+import org.apache.commons.lang3.Validate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -11,14 +12,13 @@ public class ActiveMqUtils {
 
   /**
    * Constructs the ActiveMQ queue URI with specified parameters.
+   *
    * @param queueName the name of the queue
    * @return the constructed queue URI
-   * @throws IllegalArgumentException if the queue name is blank
    */
-  public static String getQueueUri(String queueName) throws IllegalArgumentException {
-    if (StringUtils.isBlank(queueName)) {
-      throw new IllegalArgumentException("Queue name must not be blank", null);
-    }
+  public static String getQueueUri(@NotBlank String queueName) {
+
+    Validate.notBlank(queueName, "Queue name must not be blank");
 
     return UriComponentsBuilder.fromPath(String.format("activemq:queue:%s", queueName))
         .queryParam("testConnectionOnStartup", "true")

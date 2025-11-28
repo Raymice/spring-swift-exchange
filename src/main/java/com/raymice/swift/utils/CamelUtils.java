@@ -8,12 +8,15 @@ import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_MESSAGE_ID;
 import com.raymice.swift.constant.Header;
 import com.raymice.swift.db.entity.ProcessEntity;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.zip.CRC32;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Utility class for Apache Camel related operations.
@@ -23,7 +26,9 @@ public class CamelUtils {
   /**
    * Calculate CRC32 hash of a file from Camel Exchange.
    * Using CRC32 for file hashing due to its speed and low memory usage,
-   * making it suitable for small to medium-sized files where performance is critical.
+   * making it suitable for small to medium-sized files where performance is
+   * critical.
+   *
    * @param exchange Camel Exchange containing the file
    * @return CRC32 hash value
    * @throws Exception if an error occurs during reading the file
@@ -43,146 +48,147 @@ public class CamelUtils {
 
   /**
    * Get process ID from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return process ID
-   * @throws IllegalArgumentException error
    */
-  public static String getProcessId(Exchange exchange) throws IllegalArgumentException {
+  public static String getProcessId(@NotNull Exchange exchange) {
     return getHeader(exchange, Header.CUSTOM_HEADER_PROCESS_ID);
   }
 
   /**
    * Set process ID in Camel Exchange header.
-   * @param exchange Camel Exchange
+   *
+   * @param exchange  Camel Exchange
    * @param processId process ID
-   * @throws IllegalArgumentException error
    */
-  public static void setProcessId(Exchange exchange, Long processId)
-      throws IllegalArgumentException {
+  public static void setProcessId(@NotNull Exchange exchange, @NotNull Long processId) {
+    Validate.notNull(processId, "ProcessId must not be null");
     setHeader(exchange, Header.CUSTOM_HEADER_PROCESS_ID, String.valueOf(processId));
   }
 
   /**
    * Get original file name from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return original file name
-   * @throws IllegalArgumentException error
    */
-  public static String getOriginalFileName(Exchange exchange) throws IllegalArgumentException {
+  public static String getOriginalFileName(@NotNull Exchange exchange)
+      throws IllegalArgumentException {
     return getHeader(exchange, Header.CUSTOM_HEADER_ORIGINAL_FILE_NAME);
   }
 
   /**
    * Get updated file name from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return updated file name
-   * @throws IllegalArgumentException error
    */
-  public static String getUpdatedFileName(Exchange exchange) throws IllegalArgumentException {
+  public static String getUpdatedFileName(@NotNull Exchange exchange)
+      throws IllegalArgumentException {
     return getHeader(exchange, Header.CUSTOM_HEADER_UPDATED_FILE_NAME);
   }
 
   /**
    * Set original file name in Camel Exchange header.
-   * @param exchange Camel Exchange
+   *
+   * @param exchange         Camel Exchange
    * @param originalFileName original file name
-   * @throws IllegalArgumentException error
    */
-  public static void setOriginalFileName(Exchange exchange, String originalFileName)
-      throws IllegalArgumentException {
+  public static void setOriginalFileName(
+      @NotNull Exchange exchange, @NotBlank String originalFileName) {
     setHeader(exchange, Header.CUSTOM_HEADER_ORIGINAL_FILE_NAME, originalFileName);
   }
 
   /**
    * Set updated file name in Camel Exchange header.
-   * @param exchange Camel Exchange
+   *
+   * @param exchange        Camel Exchange
    * @param updatedFileName updated file name
-   * @throws IllegalArgumentException error
    */
-  public static void setUpdatedFileName(Exchange exchange, String updatedFileName)
-      throws IllegalArgumentException {
+  public static void setUpdatedFileName(
+      @NotNull Exchange exchange, @NotBlank String updatedFileName) {
     setHeader(exchange, Header.CUSTOM_HEADER_UPDATED_FILE_NAME, updatedFileName);
   }
 
   /**
    * Get file name from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return file name
-   * @throws IllegalArgumentException error
    */
-  public static String getFileName(Exchange exchange) throws IllegalArgumentException {
+  public static String getFileName(@NotNull Exchange exchange) throws IllegalArgumentException {
     return getHeader(exchange, Exchange.FILE_NAME);
   }
 
   /**
    * Set file name in Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @param fileName file name
-   * @throws IllegalArgumentException error
    */
-  public static void setFileName(Exchange exchange, String fileName)
-      throws IllegalArgumentException {
+  public static void setFileName(@NotNull Exchange exchange, @NotBlank String fileName) {
     setHeader(exchange, Exchange.FILE_NAME, fileName);
   }
 
   /**
    * Get JMS Queue name from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return JMS Queue name
-   * @throws IllegalArgumentException error
    */
-  public static String getQueueName(Exchange exchange) {
+  public static String getQueueName(@NotNull Exchange exchange) {
     return getHeader(exchange, JMS_HEADER_DESTINATION);
   }
 
   /**
    * Set MX ID in Camel Exchange header.
+   *
    * @param exchange Camel Exchange
-   * @param mxId MX ID
-   * @throws IllegalArgumentException error
+   * @param mxId     MX ID
    */
-  public static void setMxId(Exchange exchange, String mxId) throws IllegalArgumentException {
+  public static void setMxId(@NotNull Exchange exchange, @NotBlank String mxId) {
     setHeader(exchange, Header.CUSTOM_HEADER_MX_ID, mxId);
   }
 
   /**
    * Get MX ID from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return MX ID
-   * @throws IllegalArgumentException error
    */
-  public static String getMxId(Exchange exchange) throws IllegalArgumentException {
+  public static String getMxId(@NotNull Exchange exchange) {
     return getHeader(exchange, Header.CUSTOM_HEADER_MX_ID);
   }
 
   /**
    * Get JMS Message ID from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return JMS Message ID
-   * @throws IllegalArgumentException error
    */
-  public static String getJMSMessageId(Exchange exchange) throws IllegalArgumentException {
+  public static String getJMSMessageId(@NotNull Exchange exchange) {
     return getHeader(exchange, JMS_HEADER_MESSAGE_ID);
   }
 
   /**
    * Get Status from Camel Exchange header.
+   *
    * @param exchange Camel Exchange
    * @return Status
-   * @throws IllegalArgumentException error
    */
-  public static ProcessEntity.Status getStatus(Exchange exchange) throws IllegalArgumentException {
+  public static ProcessEntity.Status getStatus(@NotNull Exchange exchange) {
     return ProcessEntity.Status.valueOf(getHeader(exchange, Header.CUSTOM_HEADER_STATUS));
   }
 
   /**
    * Set Status in Camel Exchange header.
+   *
    * @param exchange Camel Exchange
-   * @param status Status
+   * @param status   Status
    * @throws IllegalArgumentException error
    */
-  public static void setStatus(Exchange exchange, ProcessEntity.Status status)
-      throws IllegalArgumentException {
+  public static void setStatus(@NotNull Exchange exchange, @NotNull ProcessEntity.Status status) {
     setHeader(exchange, Header.CUSTOM_HEADER_STATUS, status.name());
   }
 
@@ -190,10 +196,10 @@ public class CamelUtils {
    * Checks if the given header key and value represent a custom header.
    * A custom header is identified by:
    * <ul>
-   *   <li>A non-blank header key</li>
-   *   <li>A non-null header value</li>
-   *   <li>A non-blank header value (when converted to CharSequence)</li>
-   *   <li>The header key starting with the custom pattern prefix</li>
+   * <li>A non-blank header key</li>
+   * <li>A non-null header value</li>
+   * <li>A non-blank header value (when converted to CharSequence)</li>
+   * <li>The header key starting with the custom pattern prefix</li>
    * </ul>
    *
    * @param headerKey   the header key to check (can be null)
@@ -209,42 +215,31 @@ public class CamelUtils {
 
   /**
    * Set header in Camel Exchange.
-   * @param exchange Camel Exchange
+   *
+   * @param exchange    Camel Exchange
    * @param headerName  header name
    * @param headerValue header value
-   * @throws IllegalArgumentException error
    */
-  private static void setHeader(Exchange exchange, String headerName, String headerValue)
-      throws IllegalArgumentException {
-    if (exchange == null) {
-      throw new IllegalArgumentException("Exchange must not be null", null);
-    }
-    if (StringUtils.isBlank(headerName)) {
-      throw new IllegalArgumentException("HeaderName name must not be blank", null);
-    }
-    if (StringUtils.isBlank(headerValue)) {
-      throw new IllegalArgumentException(
-          "HeaderValue name must not be blank (headerName=%s)".formatted(headerName), null);
-    }
+  private static void setHeader(
+      @NotNull Exchange exchange, @NotBlank String headerName, @NotBlank String headerValue) {
+    Validate.notNull(exchange, "Exchange must not be null");
+    Validate.notBlank(headerName, "HeaderName must not be blank");
+    Validate.notBlank(
+        headerValue, "HeaderValue name must not be blank (headerName=%s)".formatted(headerName));
 
     exchange.getIn().setHeader(headerName, headerValue);
   }
 
   /**
    * Get header from Camel Exchange.
-   * @param exchange Camel Exchange
+   *
+   * @param exchange   Camel Exchange
    * @param headerName header name
    * @return header value
-   * @throws IllegalArgumentException error
    */
-  private static String getHeader(Exchange exchange, String headerName)
-      throws IllegalArgumentException {
-    if (exchange == null) {
-      throw new IllegalArgumentException("Exchange must not be null", null);
-    }
-    if (StringUtils.isBlank(headerName)) {
-      throw new IllegalArgumentException("HeaderName name must not be blank", null);
-    }
+  private static String getHeader(@NotNull Exchange exchange, @NotBlank String headerName) {
+    Validate.notNull(exchange, "Exchange must not be null");
+    Validate.notBlank(headerName, "HeaderName name must not be blank");
 
     return exchange.getIn().getHeader(headerName, String.class);
   }

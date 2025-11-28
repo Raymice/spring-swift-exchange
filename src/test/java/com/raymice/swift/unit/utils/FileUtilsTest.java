@@ -29,8 +29,7 @@ public class FileUtilsTest {
   @Test
   void addProcessId_ThrowsException_ForNullUuid() {
     String originalFileName = "file.txt";
-    assertThrows(
-        IllegalArgumentException.class, () -> FileUtils.addProcessId(originalFileName, null));
+    assertThrows(NullPointerException.class, () -> FileUtils.addProcessId(originalFileName, null));
   }
 
   @Test
