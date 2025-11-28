@@ -5,6 +5,7 @@
 ---
 
 ## **📌 Table of Contents**
+
 - [Technologies Used](#-technologies-used)
 - [Requirements](#-requirements)
 - [Build Instructions](#-build-instructions)
@@ -39,6 +40,7 @@ List all the technologies, frameworks, and tools used in the project.
 ---
 
 ## **📋 Requirements**
+
 Prerequisites for building and running the application:
 
 - **Java**: JDK 25 or later, GraalVM 25+ (if you plan to build native images)
@@ -49,8 +51,8 @@ Prerequisites for building and running the application:
 - **Monitoring**: Grafana-lgtm  0.11.17
 - **Docker**: Docker 29.0.3+
 - **Environment Variables**:
-  * `SPRING_DATASOURCE_USERNAME`
-  * `SPRING_DATASOURCE_PASSWORD`
+  - `SPRING_DATASOURCE_USERNAME`
+  - `SPRING_DATASOURCE_PASSWORD`
 
 ---
 
@@ -72,7 +74,8 @@ Prerequisites for building and running the application:
 
 ---
 
-## **▶️ Running the Application**
+## **🏃 Running the Application**
+
 How to run the application locally:
 
 ### 1 - Deploy the dependencies
@@ -99,9 +102,11 @@ docker-compose docker-compose.yml up -d
 ---
 
 ## **🚀 Deploy the Application**
+
 How to deploy the application with Docker:
 
 ### Use script (build of app required before)
+
 ```bash
 ./scripts/deploy-full-stack.sh
 ```
@@ -109,6 +114,7 @@ How to deploy the application with Docker:
 OR
 
 ### Use script including the build of the app
+
 ```bash
 ./scripts/build-and-deploy-full-stack.sh
 ```
@@ -116,6 +122,7 @@ OR
 OR
 
 ### Run manual command (build of app required before)
+
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
 ```
@@ -123,36 +130,41 @@ docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
 ---
 
 ## **🔗 External Dependencies**
+
 List of all external services that application depends on:
 
-* **Database**: *PostgreSQL* – Stores and manages all process data.
-* **Distributed Cache**: *Redis* – Ensures idempotency and manages parallelism for Apache Camel workflows.
-* **Message Broker**: *ActiveMQ* – Facilitates the distribution and propagation of processes across the platform.
+- **Database**: *PostgreSQL* – Stores and manages all process data.
+- **Distributed Cache**: *Redis* – Ensures idempotency and manages parallelism for Apache Camel workflows.
+- **Message Broker**: *ActiveMQ* – Facilitates the distribution and propagation of processes across the platform.
 
 ---
 
-## **⚙️ Configuration**
+## **🧰 Configuration**
+
 How to configure the application:
 
 This project uses Spring profiles to manage different configurations for various environments.
 The available profiles are:
-  - `dev`: Development environment
-  - `test`: Testing environment
-  - `prod`: Production environment
 
-### **Application Properties**: 
+- `dev`: Development environment
+- `test`: Testing environment
+- `prod`: Production environment
+
+### **Application Properties**
 
 Need to setup `application-*.properties` accordingly to your preferences
 
-### **Environment Variables**: 
+### **Environment Variables**
 
 Required variables for Postgres
-  * `SPRING_DATASOURCE_USERNAME`
-  * `SPRING_DATASOURCE_PASSWORD`
+
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
 
 ---
 
 ## **📈 Performance**
+
 - ✅ Usage of virtual threads (Java 21) to improve concurrency and resource utilization.
 - ✅ ActiveMQ handles message queuing and delivery efficiently.
 - ✅ Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
@@ -160,6 +172,7 @@ Required variables for Postgres
 ---
 
 ## **🧑‍🤝‍🧑 Scalability**
+
 - ✅ The application is designed to be stateless, allowing for easy scaling and load balancing.
 - ✅ Multiple instances of the application can run concurrently to handle increased load.
 - ❌ Scalable database architecture using sharding and dynamic partitioning to efficiently manage high data volumes and ensure optimal performance.
@@ -167,6 +180,7 @@ Required variables for Postgres
 ---
 
 ## **🔄 Resilience**
+
 - ✅ Redis locked operations ensure data consistency across instances.
 - ✅ ActiveMQ transaction management
 - ✅ Automatic reconnection to external dependencies (Redis, Postgres, ActiveMQ)
@@ -176,11 +190,11 @@ Required variables for Postgres
 ## **🔭 Observability**
 
 Leverages the Grafana LGTM stack for comprehensive observability:
-  - **Loki** for centralized log aggregation and management,
-  - **Grafana** for unified visualization and custom dashboards,
-  - **Tempo** for distributed tracing,
-  - **Mimir/Prometheus** for metrics collection and monitoring.
 
+- **Loki** for centralized log aggregation and management,
+- **Grafana** for unified visualization and custom dashboards,
+- **Tempo** for distributed tracing,
+- **Mimir/Prometheus** for metrics collection and monitoring.
 
 ℹ️ Usage of **spring-boot-starter-opentelemetry** to support observability for Native build.
 
