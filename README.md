@@ -17,6 +17,7 @@
 - [Scalability](#-scalability)
 - [Resilience](#-resilience)
 - [Observability](#-observability)
+- [Conventions](#-conventions)
 
 ---
 
@@ -197,6 +198,13 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 - **Mimir/Prometheus** for metrics collection and monitoring.
 
 ℹ️ Usage of **spring-boot-starter-opentelemetry** to support observability for Native build.
+
+---
+
+## **📝 Conventions**
+
+- Usage of code formatter: [spotless](https://github.com/diffplug/spotless/tree/main/plugin-maven)
+- Usage of git hook (see spotless)
 
 ---
 
