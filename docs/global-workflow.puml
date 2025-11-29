@@ -56,7 +56,7 @@ alt #LightGreen File extension is ".xml"
     end
 
 else #Pink Other extension
-    !includesub subparts.puml!UnsupportedException
+    !includesub subparts.plantuml!UnsupportedException
 end 
 
 == Validation: ValidationRoute ==
@@ -75,12 +75,12 @@ group Parse
                 end
 
             else #Pink Invalid
-                !includesub subparts.puml!UnsupportedException
+                !includesub subparts.plantuml!UnsupportedException
             end
         end
 
     else #Pink Malformed
-        !includesub subparts.puml!MalformedXmlException
+        !includesub subparts.plantuml!MalformedXmlException
     end 
 
 end
