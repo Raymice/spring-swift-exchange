@@ -174,7 +174,7 @@ Required variables for Postgres
 
 ### Global Workflow
 
-![Global Workflow](./docs/global-workfow.svg)
+![Global Workflow](./docs/global-workflow.svg)
 
 ---
 
