@@ -57,6 +57,12 @@ public class TraceUtils {
     return value.toLowerCase().replaceAll("_", ".");
   }
 
+  /**
+   * Retrieves the current trace ID from the provided Tracer.
+   *
+   * @param tracer the Tracer instance (must not be null)
+   * @return the current trace ID, or null if no current span exists
+   */
   public static String getTraceId(@NotNull Tracer tracer) {
     Validate.notNull(tracer, "Tracer must not be null");
 

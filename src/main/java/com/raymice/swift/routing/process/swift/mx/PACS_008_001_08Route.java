@@ -26,8 +26,8 @@ public class PACS_008_001_08Route extends DefaultRoute {
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();
 
-    // Take messages from ActiveMQ queue {{app.routing.queue.pacs008}}, validate and route
-    // accordingly
+    // Take messages from ActiveMQ queue {{app.routing.queue.pacs008}}, validate and
+    // route accordingly
     from(inputQueueUri)
         .routeId(getRouteId())
         .process(pacs00800108RouteService::logProcessor)

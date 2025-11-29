@@ -13,6 +13,7 @@
 - [Deploy the Application](#-deploy-the-application)
 - [External Dependencies](#-external-dependencies)
 - [Configuration](#-configuration)
+- [Workflow](#-workflow)
 - [Performance](#-performance)
 - [Scalability](#-scalability)
 - [Resilience](#-resilience)
@@ -169,6 +170,14 @@ Required variables for Postgres
 
 ---
 
+## **📊 Workflow**
+
+### Global Workflow
+
+![Global Workflow](./docs/global-workfow.svg)
+
+---
+
 ## **📈 Performance**
 
 - ✅ Usage of virtual threads (Java 21) to improve concurrency and resource utilization.
@@ -210,6 +219,8 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 
 - Usage of code formatter: [spotless](https://github.com/diffplug/spotless/tree/main/plugin-maven)
 - Usage of git hook (see spotless)
+- Usage of MDC to bind each log with a context
+- Usage of PlantUML for sequence diagrams
 
 ---
 

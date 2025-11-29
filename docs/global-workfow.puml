@@ -1,0 +1,104 @@
+@startuml
+
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+box "External Service" #LightGrey
+    participant Client  as Client
+end box
+
+box "Internal Service" #White
+    collections     "Input Folder"              as Input
+    collections     "Success Folder"            as Success
+    participant     "Spring SWIFT Exchange"     as App
+    database        Redis                       as Redis    #red
+    database        Postgres                    as PG       #white
+    queue           ActiveMQ                    as MQ       #orange
+    collections     "Unsupported Folder"        as Unsupported
+    collections     "Error Folder"              as Error
+end box
+
+== File reception: FileRoute ==
+
+Client -> Input: Deliver SWIFT message file
+
+group Camel File Listener
+    App -> Input: Scan files
+    Input --> App: Find new file
+    App -> Redis: Ask lock on file
+    
+    alt #LightGreen File not already locked
+        Redis --> App: Lock the file
+        App -> App: Move file to ".inprogress" folder
+    else #Pink File already locked
+        Redis --> App: Lock not acquired
+    end
+end
+
+== Process file: FileRoute ==
+
+App -> PG: Create new process\n**Database**: swiftdb\n**Table**: process\n**Status**: CREATED 
+activate PG
+PG --> App: Process ID
+deactivate PG
+
+App -> App: Rename file with Process ID prefix (uniqueness)
+
+App -> App: Encrich Camel Exchange headers
+
+alt #LightGreen File extension is ".xml"
+    group #White Success
+        App -> MQ: Send to the validator queue\n**Queue**: swift-validator
+    end
+
+else #Pink Other extension
+    group #White UnsupportedException
+        App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: UNSUPPORTED 
+        App -> Unsupported: Move file to the folder
+    end
+end 
+
+== Validation: ValidationRoute ==
+
+MQ o-> App: Receive message\n**Queue**: swift-validator
+
+group Parse
+    App -> App: Validate well formed
+
+    alt #LightGreen Well formed
+        group #White Validate MX
+            alt #LightGreen Valid & 008.001.08
+                group #White 008.001.08
+                    App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: VALIDATED 
+                    App -> MQ: Send to the specific queue\n**Queue**: swift-pacs.008.001.08
+                end
+
+            else #Pink Invalid
+                group #White UnsupportedException
+                    App -> App: UnsupportedException workflow
+                end
+            end
+        end
+
+    else #Pink Malformed
+        group #White MalformedXmlException
+            App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: FAILED 
+            App -> MQ: Send to Dead Letter Queue\n**Queue**: swift-dead-letter
+            App -> Error: Move file to the folder
+        end
+    end 
+
+end
+
+== Specific Workflow: PACS_XXX_XXX_XXRoute ==
+
+MQ o-> App: Receive message\n**Queue**: swift-pacs.XXX.XXX.XX
+
+group swift-pacs.008.001.08
+    App -> App: Implement your logic
+    App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: COMPLETED 
+    App -> Success: Move file to the folder
+end
+
+
+@enduml
