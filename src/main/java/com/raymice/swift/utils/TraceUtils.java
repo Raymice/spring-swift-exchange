@@ -4,6 +4,7 @@ package com.raymice.swift.utils;
 import static com.raymice.swift.utils.CamelUtils.isCustomHeader;
 
 import io.micrometer.tracing.ScopedSpan;
+import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -54,5 +55,16 @@ public class TraceUtils {
   public static String applyOpenTelemetryConv(@NotBlank String value) {
     Validate.notBlank(value, "Value must not be blank");
     return value.toLowerCase().replaceAll("_", ".");
+  }
+
+  public static String getTraceId(@NotNull Tracer tracer) {
+    Validate.notNull(tracer, "Tracer must not be null");
+
+    Span span = tracer.currentSpan();
+    if (span != null && span.context() != null) {
+      return span.context().traceId();
+    } else {
+      return null;
+    }
   }
 }

@@ -3,11 +3,11 @@ package com.raymice.swift.configuration.mdc.annotation;
 
 import com.raymice.swift.configuration.mdc.MdcService;
 import com.raymice.swift.utils.CamelUtils;
+import com.raymice.swift.utils.TraceUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.event.AbstractExchangeEvent;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ExchangeMdcAspect {
 
+  private final io.micrometer.tracing.Tracer tracer;
   private final MdcService mdcService;
 
   @Around("@annotation(ExchangeMDC)")
@@ -55,9 +56,10 @@ public class ExchangeMdcAspect {
 
     if (camelExchange != null) {
       final String processId = CamelUtils.getProcessId(camelExchange);
-      if (StringUtils.isNotBlank(processId)) {
-        mdcService.setProcessId(processId);
-      }
+      mdcService.setProcessId(processId);
     }
+
+    final String traceId = TraceUtils.getTraceId(tracer);
+    mdcService.setTraceId(traceId);
   }
 }
