@@ -1,0 +1,22 @@
+@startuml partial
+
+!startsub UnsupportedException
+
+group #White UnsupportedException
+    App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: UNSUPPORTED 
+    App -> Unsupported: Move file to the folder
+end
+
+!endsub
+
+!startsub MalformedXmlException
+
+group #White MalformedXmlException
+    App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: FAILED 
+    App -> MQ: Send to Dead Letter Queue\n**Queue**: swift-dead-letter
+    App -> Error: Move file to the folder
+end
+
+!endsub
+
+@enduml

@@ -11,9 +11,9 @@ box "Internal Service" #White
     collections     "Input Folder"              as Input
     collections     "Success Folder"            as Success
     participant     "Spring SWIFT Exchange"     as App
-    database        Redis                       as Redis    #red
-    database        Postgres                    as PG       #white
-    queue           ActiveMQ                    as MQ       #orange
+    database        Redis                       as Redis            #red
+    database        Postgres                    as PG               #white
+    queue           ActiveMQ                    as MQ               #orange
     collections     "Unsupported Folder"        as Unsupported
     collections     "Error Folder"              as Error
 end box
@@ -37,14 +37,18 @@ end
 
 == Process file: FileRoute ==
 
-App -> PG: Create new process\n**Database**: swiftdb\n**Table**: process\n**Status**: CREATED 
-activate PG
-PG --> App: Process ID
-deactivate PG
+group #White Create Process
 
-App -> App: Rename file with Process ID prefix (uniqueness)
+    App -> PG: Create new process\n**Database**: swiftdb\n**Table**: process\n**Status**: CREATED 
+    activate PG
+    PG --> App: Process ID
+    deactivate PG
 
-App -> App: Encrich Camel Exchange headers
+    App -> App: Rename file with Process ID prefix (uniqueness)
+
+    App -> App: Encrich Camel Exchange headers
+
+end
 
 alt #LightGreen File extension is ".xml"
     group #White Success
@@ -52,10 +56,7 @@ alt #LightGreen File extension is ".xml"
     end
 
 else #Pink Other extension
-    group #White UnsupportedException
-        App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: UNSUPPORTED 
-        App -> Unsupported: Move file to the folder
-    end
+    !includesub subparts.puml!UnsupportedException
 end 
 
 == Validation: ValidationRoute ==
@@ -74,18 +75,12 @@ group Parse
                 end
 
             else #Pink Invalid
-                group #White UnsupportedException
-                    App -> App: UnsupportedException workflow
-                end
+                !includesub subparts.puml!UnsupportedException
             end
         end
 
     else #Pink Malformed
-        group #White MalformedXmlException
-            App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: FAILED 
-            App -> MQ: Send to Dead Letter Queue\n**Queue**: swift-dead-letter
-            App -> Error: Move file to the folder
-        end
+        !includesub subparts.puml!MalformedXmlException
     end 
 
 end
