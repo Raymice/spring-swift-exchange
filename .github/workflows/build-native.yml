@@ -15,6 +15,6 @@ jobs:
           architecture: x64
           cache: maven
       - name: Install Native Image
-        run: gu install native-image
+        run: ${GRAALVM_HOME}/bin/gu install native-image
       - name: Build with Maven
         run: ./mvnw --batch-mode native:compile -Pnative
