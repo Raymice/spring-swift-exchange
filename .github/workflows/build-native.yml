@@ -2,19 +2,24 @@ on:
   workflow_dispatch: # manual trigger via GitHub UI
 
 jobs:
+  # https://github.com/graalvm/setup-graalvm
   build-native:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Set up Java
-        uses: actions/setup-java@v5
+      - name: Set up Graalvm
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: "graalvm"
+          distribution: "graalvm-community"
           java-version: "25"
-          architecture: x64
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: maven
-      - name: Install Native Image
-        run: ${GRAALVM_HOME}/bin/gu install native-image
+      - name: Display config
+        run: |
+          echo "GRAALVM_HOME: $GRAALVM_HOME"
+          echo "JAVA_HOME: $JAVA_HOME"
+          java --version
+          native-image --version
       - name: Build with Maven
         run: ./mvnw --batch-mode native:compile -Pnative
