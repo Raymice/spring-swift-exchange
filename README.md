@@ -5,6 +5,8 @@
 ---
 
 [![tests](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
+![Coverage](.github/badges/jacoco.svg)
+![Branches](.github/badges/branches.svg)
 
 ---
 

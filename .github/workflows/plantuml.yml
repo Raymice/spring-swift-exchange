@@ -34,6 +34,6 @@ jobs:
           if git diff --cached --quiet; then
               echo "No diagram changes to commit."
           else
-              git commit -m "docs: auto-rendered PlantUML diagrams"
+              git commit -m "bot: auto-rendered PlantUML diagrams"
               git push
           fi
