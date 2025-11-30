@@ -3,8 +3,8 @@
 *A boilerplate Java application for processing incoming and outgoing SWIFT messages in a banking context.*
 
 ---
-[![.github/workflows/formatting.yml](https://github.com/Raymice/swift-message-processing/actions/workflows/formatting.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/formatting.yml)
-[![.github/workflows/test.yml](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
+[![.github/workflows/formatting.yml](https://github.com/Raymice/spring-swift-exchange/actions/workflows/formatting.yml/badge.svg)](https://github.com/Raymice/spring-swift-exchange/actions/workflows/formatting.yml)
+[![.github/workflows/test.yml](https://github.com/Raymice/spring-swift-exchange/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/spring-swift-exchange/actions/workflows/test.yml)
 ![Coverage](.github/badges/jacoco.svg)
 ![Branches](.github/badges/branches.svg)
 
