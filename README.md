@@ -4,6 +4,10 @@
 
 ---
 
+[![.github/workflows/test.yml](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
+
+---
+
 ## **📌 Table of Contents**
 
 - [Technologies Used](#-technologies-used)
