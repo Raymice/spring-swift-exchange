@@ -4,6 +4,12 @@
 
 ---
 
+[![tests](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
+![Coverage](.github/badges/jacoco.svg)
+![Branches](.github/badges/branches.svg)
+
+---
+
 ## **📌 Table of Contents**
 
 - [Technologies Used](#-technologies-used)
@@ -221,6 +227,7 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 - Usage of git hook (see spotless)
 - Usage of MDC to bind each log with a context
 - Usage of PlantUML for sequence diagrams
+- Usage of JaCoCo for code coverage
 
 ---
 
