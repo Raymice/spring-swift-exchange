@@ -5,6 +5,7 @@ import static com.raymice.sse.constant.Header.CUSTOM_PATTERN;
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_DESTINATION;
 import static org.apache.camel.component.jms.JmsConstants.JMS_HEADER_MESSAGE_ID;
 
+import com.raymice.sse.configuration.report.annotation.GeneratedExcludeReport;
 import com.raymice.sse.constant.Header;
 import com.raymice.sse.db.entity.ProcessEntity;
 import jakarta.annotation.Nullable;
@@ -33,6 +34,7 @@ public class CamelUtils {
    * @return CRC32 hash value
    * @throws Exception if an error occurs during reading the file
    */
+  @GeneratedExcludeReport
   public static long calculateFileHash(Exchange exchange) throws Exception {
     Message message = exchange.getIn();
     CRC32 crc = new CRC32();
