@@ -1,0 +1,147 @@
+/* Raymice - https://github.com/Raymice - 2025 */
+package com.raymice.sse.db.sevice;
+
+import com.raymice.sse.configuration.mdc.MdcService;
+import com.raymice.sse.configuration.mdc.annotation.ExchangeMDC;
+import com.raymice.sse.configuration.opentelemetry.annotation.ExchangeSpan;
+import com.raymice.sse.configuration.profile.annotation.TestProfileOnly;
+import com.raymice.sse.db.entity.ProcessEntity;
+import com.raymice.sse.db.repository.ProcessRepo;
+import com.raymice.sse.exception.WorkflowStatusException;
+import com.raymice.sse.utils.CamelUtils;
+import jakarta.validation.constraints.NotNull;
+import java.rmi.UnexpectedException;
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ProcessService {
+
+  private final ProcessRepo processRepo;
+  private final MdcService mdcService;
+
+  /**
+   * Create a new process record in the database
+   *
+   * @param name    file name
+   * @param payload file content
+   * @return the saved ProcessEntity
+   */
+  public ProcessEntity createProcess(String name, String payload) {
+    ProcessEntity process = new ProcessEntity();
+    process.setName(name);
+    process.setPayload(payload);
+    process.setStatus(ProcessEntity.Status.CREATED);
+    process.setCreatedAt(LocalDateTime.now());
+    process.setUpdatedAt(LocalDateTime.now());
+
+    ProcessEntity savedProcess = processRepo.save(process);
+
+    mdcService.setProcessId(String.valueOf(savedProcess.getId()));
+    log.info("💾Process with id={} saved successfully (file='{}')", savedProcess.getId(), name);
+    mdcService.clear();
+
+    return savedProcess;
+  }
+
+  /**
+   * Find a process by its id
+   *
+   * @param processId the id of the process to find
+   * @return the found ProcessEntity
+   * @throws IllegalArgumentException if the process is not found
+   */
+  public ProcessEntity findById(long processId) {
+    return processRepo
+        .findById(processId)
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException("Process with id=%d not found".formatted(processId)));
+  }
+
+  /**
+   * Update the status of a process in the database
+   *
+   * @param exchange  Camel Exchange
+   * @param newStatus the new status to set
+   */
+  @ExchangeMDC
+  @ExchangeSpan(name = "update-process-status")
+  public void updateProcessStatus(Exchange exchange, ProcessEntity.Status newStatus)
+      throws Exception {
+
+    final String processId = CamelUtils.getProcessId(exchange);
+    final ProcessEntity.Status actualStatus = CamelUtils.getStatus(exchange);
+
+    if (actualStatus == null) {
+      throw new UnexpectedException("No status on exchange");
+    }
+
+    // Check if status update is allowed
+    if (!isStatusAllowedToUpdate(actualStatus, newStatus)) {
+      log.error(
+          "‼️ Status update not allowed for processId={}: current status={}, attempted status={}",
+          processId,
+          actualStatus,
+          newStatus);
+
+      throw new WorkflowStatusException("Status update not allowed");
+    }
+
+    log.debug(
+        "Previous status of processId={} was {}, will be upddated to {}",
+        processId,
+        actualStatus,
+        newStatus);
+
+    processRepo.updateStatusById(newStatus, Long.parseLong(processId));
+
+    log.info(
+        "🔄Process with id={} updated from status={} to status={}",
+        processId,
+        actualStatus,
+        newStatus);
+  }
+
+  @TestProfileOnly
+  public List<ProcessEntity> findAll() {
+    return processRepo.findAll();
+  }
+
+  @TestProfileOnly
+  public void deleteAll() {
+    processRepo.deleteAll();
+  }
+
+  private boolean isStatusAllowedToUpdate(
+      @NotNull ProcessEntity.Status actual, @NotNull ProcessEntity.Status newStatus) {
+
+    if (actual == null || newStatus == null) {
+      // Null statuses are not allowed
+      return false;
+    }
+
+    if (newStatus == ProcessEntity.Status.FAILED) {
+      // Always allow updating to 'FAILED'
+      return true;
+    }
+
+    if (actual == newStatus) {
+      // No need to update if the status is the same
+      return false;
+    }
+
+    if (newStatus == ProcessEntity.Status.CREATED) {
+      // Never allow downgrading to 'CREATED'
+      return false;
+    }
+
+    return actual.ordinal() < newStatus.ordinal();
+  }
+}

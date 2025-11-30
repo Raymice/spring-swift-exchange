@@ -9,9 +9,9 @@
         <relativePath/>
     </parent>
     <groupId>com.raymice</groupId>
-    <artifactId>swift</artifactId>
+    <artifactId>spring-swift-exchange</artifactId>
     <version>0.0.2-SNAPSHOT</version>
-    <name>swift</name>
+    <name>Spring SWIFT Exchange</name>
     <description>Demo project for SWIFT message processing</description>
 
     <properties>
@@ -20,7 +20,7 @@
         <lombok.version>1.18.42</lombok.version>
         <camel.version>4.14.0</camel.version>
         <spring.fix.version>4.0.0-M2</spring.fix.version>
-        <start-class>com.raymice.swift.SwiftApplication</start-class>
+        <start-class>com.raymice.sse.MainApplication</start-class>
     </properties>
 
 
@@ -230,7 +230,7 @@
                 <configuration>
                     <image>
                         <!--Override name of docker image-->
-                        <name>spring-swift</name>
+                        <name>spring-swift-exchange</name>
                         <!--Reduce the image size-->
                         <builder>bellsoft/buildpacks.builder:musl</builder>
                     </image>
@@ -316,7 +316,7 @@
                     </execution>
                 </executions>
             </plugin>
-             <!--JaCoCo-->
+            <!--JaCoCo-->
 
         </plugins>
     </build>

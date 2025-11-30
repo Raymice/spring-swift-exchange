@@ -1,7 +1,7 @@
 services:
-  swift:
+  spring-swift-exchange:
     restart: unless-stopped
-    image: docker.io/library/spring-swift:latest
+    image: docker.io/library/spring-swift-exchange:latest
     deploy:
       mode: replicated
       replicas: 3 # Number of replicas you want to run
