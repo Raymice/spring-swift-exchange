@@ -79,10 +79,12 @@ public class Containers implements Startable {
   public void stop() {
     for (GenericContainer<?> container : containers.values()) {
       log.info("🛑Stopping container: {}", container.getDockerImageName());
+      container.close();
       container.stop();
     }
   }
 
+  @SuppressWarnings("resource")
   private void createContainers() {
 
     activemq =
