@@ -3,7 +3,7 @@ on:
     workflow_dispatch: # manual trigger via GitHub UI
 
 jobs:
-    build-docker:
+    maven-test:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
