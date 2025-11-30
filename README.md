@@ -4,7 +4,7 @@
 
 ---
 
-[![.github/workflows/test.yml](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
+[![tests](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml/badge.svg)](https://github.com/Raymice/swift-message-processing/actions/workflows/test.yml)
 
 ---
 
