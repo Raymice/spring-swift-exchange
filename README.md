@@ -250,9 +250,7 @@ Leverages the Grafana LGTM stack for comprehensive observability:
     - Update status of process in database
     - Output in error folder
     - Dead letter queue
-- Explain MDC
 - Explore sharding & partitioning for Postgres (Citrus)
-- Add code coverage
 - Review all javadoc
 - Add websites references for each topic
 - Explain Native build
@@ -260,7 +258,6 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 - Implement tool for volume testing (Gatling, JMeter)
 - Explain technology choices and suggest alternatives
 - Explain Grafana dashboards
-- Create sequence diagram of the workflow
 - Add security for specific actuator endpoints ?
 - Implement all SWIFT message type
   - Include conversion
