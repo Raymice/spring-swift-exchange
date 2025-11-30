@@ -1,5 +1,5 @@
 on:
-  push:
+  push: # triggers on any push
     paths:
       - "docs/*.puml" # only run when a .puml has changed
   workflow_dispatch: # manual trigger via GitHub UI
@@ -17,6 +17,7 @@ jobs:
         with:
           distribution: "graalvm"
           java-version: "25"
+          cache: maven
       - name: Install GraphViz
         run: sudo apt-get update && sudo apt-get install -y graphviz
       - name: Download PlantUML jar
