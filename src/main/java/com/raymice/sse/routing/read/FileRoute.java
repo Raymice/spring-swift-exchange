@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.sse.routing.read;
 
+import com.raymice.sse.configuration.CamelConfig;
 import com.raymice.sse.routing.DefaultRoute;
 import com.raymice.sse.utils.ActiveMqUtils;
 import java.util.concurrent.ExecutorService;
@@ -24,11 +25,15 @@ public class FileRoute extends DefaultRoute {
 
   private final FileRouteService fileRouteService;
 
+  private final CamelConfig camelConfig;
+
   public FileRoute(
       SpringRedisIdempotentRepository myRedisIdempotentRepository,
-      FileRouteService fileRouteService) {
+      FileRouteService fileRouteService,
+      CamelConfig camelConfig) {
     this.myRedisIdempotentRepository = myRedisIdempotentRepository;
     this.fileRouteService = fileRouteService;
+    this.camelConfig = camelConfig;
   }
 
   @Autowired
@@ -79,38 +84,29 @@ public class FileRoute extends DefaultRoute {
    *      "https://camel.apache.org/components/4.14.x/file-component.html">https://camel.apache.org</a>
    */
   private String buildFileUri() {
-    // TODO externalize read lock parameters
+
+    var conf = camelConfig.getFileProcessor();
+
     return UriComponentsBuilder.fromPath(
             String.format("file:%s", getApplicationConfig().getFileInputPath()))
-        // Auto create the folder
-        .queryParam("autoCreate", "true")
-        // The original file not remains in the source directory after Camel has
-        // processed it.
-        .queryParam("noop", "false")
-        // Not looking at the subdirectories to avoid conflicts
-        .queryParam("recursive", "false")
-        // Move files in hidden "inprogress" folder
-        .queryParam("preMove", ".inprogress")
-        // Do not include hidden files
-        .queryParam("includeHiddenFiles", "false")
-        // Do not include hidden directories
-        .queryParam("includeHiddenDirs", "false")
-        // Only input
+        .queryParam("autoCreate", conf.getAutoCreate())
+        .queryParam("noop", conf.getNoop())
+        .queryParam("recursive", conf.getRecursive())
+        .queryParam("preMove", conf.getPreMoveFolder())
+        .queryParam("includeHiddenFiles", conf.getHiddenFiles())
+        .queryParam("includeHiddenDirs", conf.getHiddenDirs())
         .queryParam("exchangePattern", "InOnly")
-        // Specify charset
-        .queryParam("charset", "UTF-8")
+        .queryParam("charset", conf.getCharset())
         // This combines the idempotent and changed strategies, providing a
         // robust read lock that leverages both change detection and an idempotent
         // repository
         // for clustered scenarios
         .queryParam("readLock", "idempotent-changed")
         // Use a shared Redis-based Idempotent Repository for read lock to prevent
-        // multiple
-        // instances processing the same file
+        // multiple instances processing the same file
         .queryParam("idempotentRepository", "#myRedisIdempotentRepository")
-        .queryParam("readLockCheckInterval", "500")
-        // readLockTimeout need to be at least readLockCheckInterval * 2
-        .queryParam("readLockTimeout", "10000")
+        .queryParam("readLockCheckInterval", conf.getReadLockCheckInterval())
+        .queryParam("readLockTimeout", conf.getReadLockTimeout())
         .build()
         .toUriString();
   }
