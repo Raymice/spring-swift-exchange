@@ -23,9 +23,12 @@ public class ValidationRoute extends DefaultRoute {
   @Override
   public void configure() {
     final ApplicationConfig.Routing routing = getApplicationConfig().getRouting();
+    final var concurrentConsumers = getActiveMQConfig().getConcurrentConsumers();
 
-    final String inputQueueUri = ActiveMqUtils.getQueueUri(routing.getQueue().getValidator());
-    final String outputQueueUri = ActiveMqUtils.getQueueUri(routing.getQueue().getPacs008());
+    final String inputQueueUri =
+        ActiveMqUtils.getQueueUri(routing.getQueue().getValidator(), concurrentConsumers);
+    final String outputQueueUri =
+        ActiveMqUtils.getQueueUri(routing.getQueue().getPacs008(), concurrentConsumers);
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();

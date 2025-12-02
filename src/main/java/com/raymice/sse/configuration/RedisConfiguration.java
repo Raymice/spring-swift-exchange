@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
@@ -19,11 +20,13 @@ import org.springframework.validation.annotation.Validated;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = "spring.redis")
+@ConfigurationProperties(prefix = "spring.data.redis")
 public class RedisConfiguration {
 
-  @NotBlank private String host;
-  @NotNull private int port;
+  @NotBlank private String host; // spring.data.redis.host
+  @NotNull private Integer port; // spring.data.redis.port
+  @NotNull private Integer timeout; // spring.data.redis.timeout
+  @NotBlank private String repositoryName; // spring.data.redis.repositoryName
 
   /**
    * Defines the Redis Connection Factory using Lettuce
@@ -32,7 +35,17 @@ public class RedisConfiguration {
    */
   @Bean("myRedisConnectionFactory")
   public RedisConnectionFactory redisConnectionFactory() {
-    return new LettuceConnectionFactory(host, port);
+    LettuceClientConfiguration clientConfig =
+        LettuceClientConfiguration.builder()
+            .commandTimeout(java.time.Duration.ofMillis(timeout))
+            .build();
+
+    // Need to be updating according to the Redis server settings
+    org.springframework.data.redis.connection.RedisConfiguration redisConfig =
+        new org.springframework.data.redis.connection.RedisStandaloneConfiguration(host, port);
+
+    LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfig, clientConfig);
+    return factory;
   }
 
   /**
@@ -59,8 +72,8 @@ public class RedisConfiguration {
   @Bean("myRedisIdempotentRepository")
   public SpringRedisIdempotentRepository myRedisIdempotentRepository(
       RedisTemplate<String, String> redisTemplate) {
-    // Group the keys in Redis under "myFileProcessor"
-    // TODO externalize the repository name
-    return new SpringRedisIdempotentRepository(redisTemplate, "myFileProcessor");
+    // Group the keys in Redis under repositoryName provided in application
+    // properties
+    return new SpringRedisIdempotentRepository(redisTemplate, repositoryName);
   }
 }
