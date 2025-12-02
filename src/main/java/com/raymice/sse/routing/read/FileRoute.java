@@ -19,7 +19,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class FileRoute extends DefaultRoute {
 
+  @SuppressWarnings("unused")
   private final SpringRedisIdempotentRepository myRedisIdempotentRepository;
+
   private final FileRouteService fileRouteService;
 
   public FileRoute(
