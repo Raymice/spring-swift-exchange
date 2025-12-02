@@ -16,15 +16,18 @@ public class ActiveMqUtils {
    * @param queueName the name of the queue
    * @return the constructed queue URI
    */
-  public static String getQueueUri(@NotBlank String queueName) {
+  public static String getQueueUri(@NotBlank String queueName, int concurrentConsumers) {
 
     Validate.notBlank(queueName, "Queue name must not be blank");
 
-    return UriComponentsBuilder.fromPath(String.format("activemq:queue:%s", queueName))
-        .queryParam("testConnectionOnStartup", "true")
-        // TODO add external configuration for concurrentConsumers
-        .queryParam("concurrentConsumers", "5")
-        .build()
-        .toUriString();
+    UriComponentsBuilder builder =
+        UriComponentsBuilder.fromPath(String.format("activemq:queue:%s", queueName))
+            .queryParam("testConnectionOnStartup", "true");
+
+    if (concurrentConsumers > 0) {
+      builder = builder.queryParam("concurrentConsumers", concurrentConsumers);
+    }
+
+    return builder.build().toUriString();
   }
 }

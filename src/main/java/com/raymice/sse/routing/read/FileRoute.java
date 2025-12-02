@@ -42,7 +42,9 @@ public class FileRoute extends DefaultRoute {
     final String inputPath = buildFileUri();
 
     final String outputQueueUri =
-        ActiveMqUtils.getQueueUri(getApplicationConfig().getQueueValidatorName());
+        ActiveMqUtils.getQueueUri(
+            getApplicationConfig().getQueueValidatorName(),
+            getActiveMQConfig().getConcurrentConsumers());
 
     // Call the parent method to apply the shared error handling
     setupCommonExceptionHandling();

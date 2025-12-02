@@ -20,7 +20,9 @@ public class PACS_008_001_08Route extends DefaultRoute {
   public void configure() throws Exception {
 
     final var routeConfig = getApplicationConfig().getRouting();
-    final String inputQueueUri = ActiveMqUtils.getQueueUri(routeConfig.getQueue().getPacs008());
+    final var concurrentConsumers = getActiveMQConfig().getConcurrentConsumers();
+    final String inputQueueUri =
+        ActiveMqUtils.getQueueUri(routeConfig.getQueue().getPacs008(), concurrentConsumers);
     final String outputSuccessFilePath = getSuccessFileEndpoint();
 
     // Call the parent method to apply the shared error handling

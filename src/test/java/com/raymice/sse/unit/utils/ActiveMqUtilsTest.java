@@ -14,14 +14,14 @@ class ActiveMqUtilsTest {
     String queueName = "orders";
     String expectedUri = "activemq:queue:orders?testConnectionOnStartup=true&concurrentConsumers=5";
 
-    String result = ActiveMqUtils.getQueueUri(queueName);
+    String result = ActiveMqUtils.getQueueUri(queueName, 5);
     assertEquals(expectedUri, result);
   }
 
   @Test
   void getQueueUri_ThrowsException_ForBlankQueueName() {
     String queueName = " ";
-    assertThrows(IllegalArgumentException.class, () -> ActiveMqUtils.getQueueUri(queueName));
+    assertThrows(IllegalArgumentException.class, () -> ActiveMqUtils.getQueueUri(queueName, 0));
   }
 
   @Test
@@ -30,7 +30,7 @@ class ActiveMqUtilsTest {
     String expectedUri =
         "activemq:queue:order#123?testConnectionOnStartup=true&concurrentConsumers=5";
 
-    String result = ActiveMqUtils.getQueueUri(queueName);
+    String result = ActiveMqUtils.getQueueUri(queueName, 5);
 
     assertEquals(expectedUri, result);
   }
@@ -38,7 +38,7 @@ class ActiveMqUtilsTest {
   @Test
   void getQueueUri_ThrowsException_ForNullQueueName() {
     String queueName = null;
-    assertThrows(NullPointerException.class, () -> ActiveMqUtils.getQueueUri(queueName));
+    assertThrows(NullPointerException.class, () -> ActiveMqUtils.getQueueUri(queueName, 0));
   }
 
   @Test
@@ -47,7 +47,7 @@ class ActiveMqUtilsTest {
     String expectedUri =
         "activemq:queue:order queue?testConnectionOnStartup=true&concurrentConsumers=5";
 
-    String result = ActiveMqUtils.getQueueUri(queueName);
+    String result = ActiveMqUtils.getQueueUri(queueName, 5);
     assertEquals(expectedUri, result);
   }
 
@@ -56,7 +56,7 @@ class ActiveMqUtilsTest {
     String queueName = "订单";
     String expectedUri = "activemq:queue:订单?testConnectionOnStartup=true&concurrentConsumers=5";
 
-    String result = ActiveMqUtils.getQueueUri(queueName);
+    String result = ActiveMqUtils.getQueueUri(queueName, 5);
     assertEquals(expectedUri, result);
   }
 }

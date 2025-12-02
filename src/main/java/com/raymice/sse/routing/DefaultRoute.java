@@ -1,6 +1,7 @@
 /* Raymice - https://github.com/Raymice - 2025 */
 package com.raymice.sse.routing;
 
+import com.raymice.sse.configuration.ActiveMQConfig;
 import com.raymice.sse.configuration.ApplicationConfig;
 import com.raymice.sse.configuration.mdc.MdcService;
 import com.raymice.sse.db.sevice.ProcessService;
@@ -29,6 +30,7 @@ public abstract class DefaultRoute extends RouteBuilder {
   @Autowired private MdcService mdcService;
   @Autowired private ProcessService processService;
   @Autowired private ApplicationConfig applicationConfig;
+  @Autowired private ActiveMQConfig activeMQConfig;
 
   private final String routeId;
   private String errorFileEndpoint;
