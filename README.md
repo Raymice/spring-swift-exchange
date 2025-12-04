@@ -102,7 +102,7 @@ OR
 
 ```bash
 # Manual command
-docker-compose docker-compose.yml up -d
+docker stack deploy -c docker-compose.yml  stack --detach=true
 ```
 
 ### 3 - Run the application
@@ -137,7 +137,7 @@ OR
 ### Run manual command (build of app required before)
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
+docker stack deploy -c docker-compose.yml -c docker-compose.app.yml stack --detach=true
 ```
 
 ---
