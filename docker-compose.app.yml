@@ -16,6 +16,7 @@ services:
       MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/logs
       MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4317/v1/traces
       MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://grafana-lgtm:4318/v1/metrics
+      SPRING_APPLICATION_NAME: "spring-swift-exchange-{{.Task.Slot}}"
     ports:
       - "8080-8085:8080"
     volumes:
