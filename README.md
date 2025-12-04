@@ -219,6 +219,27 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 
 ℹ️ Usage of **spring-boot-starter-opentelemetry** to support observability for Native build.
 
+### Metrics
+
+- Every kind of metrics (database, JVM resources, ...)
+![All metrics](<screenshots/metrics-all.png>)
+
+- Custom dashboard
+![Custom metrics dashboard](<screenshots/metrics-custom-dashboard.png>)
+
+### Logs
+
+- Distributed log view
+![View of all logs](<screenshots/logs-view.png>)
+
+- Filtering of logs by custom MDC property
+![Log filtering](<screenshots/logs-filtering.png>)
+
+### Traces
+
+- Trace with custom span attributes
+![Trace](<screenshots/trace.png>)
+
 ---
 
 ## **📝 Conventions**
@@ -257,7 +278,6 @@ Leverages the Grafana LGTM stack for comprehensive observability:
   - Create dedicated dockerfile for build
 - Implement tool for volume testing (Gatling, JMeter)
 - Explain technology choices and suggest alternatives
-- Explain Grafana dashboards
 - Add security for specific actuator endpoints ?
 - Implement all SWIFT message type
   - Include conversion
