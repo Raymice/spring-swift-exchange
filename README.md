@@ -31,13 +31,13 @@
 
 ## **🛠 Technologies Used**
 
-List all the technologies, frameworks, and tools used in the project.
+List of all the technologies, frameworks, and tools used in the project.
 
 | Category              | Technologies/Tools                                                                  |
 |-----------------------|-------------------------------------------------------------------------------------|
 | **Backend**           | Java 25, Spring Boot 4, Spring Data JPA, Apache Camel                               |
-| **Database**          | PostgreSQL                                                                          |
-| **Distributed cache** | Redis                                                                      |
+| **Database**          | PostgreSQL, Flyway                                                                  |
+| **Distributed cache** | Redis                                                                               |
 | **Message broker**    | ActiveMQ classic                                                                    |
 | **Build Tool**        | Maven                                                                               |
 | **Testing**           | JUnit 5, Mockito, Testcontainers                                                    |
@@ -149,6 +149,7 @@ List of all external services that application depends on:
 - **Database**: *PostgreSQL* – Stores and manages all process data.
 - **Distributed Cache**: *Redis* – Ensures idempotency and manages parallelism for Apache Camel workflows.
 - **Message Broker**: *ActiveMQ* – Facilitates the distribution and propagation of processes across the platform.
+- **SWIFT Library**: *com.prowidesoftware.pw-iso20022* - Allow parsing and creation of SWIFT messages.
 
 ---
 
@@ -189,6 +190,7 @@ Required variables for Postgres
 - ✅ Usage of virtual threads (Java 21) to improve concurrency and resource utilization.
 - ✅ ActiveMQ handles message queuing and delivery efficiently.
 - ✅ Multiple ActiveMQ consumers can be configured to process messages in parallel, enhancing throughput.
+- ✅ Usage of Database Stored Procedure & Trigger to fill history table
 
 ---
 
