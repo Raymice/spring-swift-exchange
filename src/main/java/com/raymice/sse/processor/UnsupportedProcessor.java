@@ -4,6 +4,7 @@ package com.raymice.sse.processor;
 import com.raymice.sse.configuration.mdc.annotation.ExchangeMDC;
 import com.raymice.sse.db.entity.ProcessEntity;
 import com.raymice.sse.db.sevice.ProcessService;
+import com.raymice.sse.utils.CamelUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -30,5 +31,8 @@ public class UnsupportedProcessor implements Processor {
 
     // Update process status to unsupported in database
     new UpdateStatusProcessor(processService, ProcessEntity.Status.UNSUPPORTED).process(exchange);
+
+    // Set file name for output
+    CamelUtils.setFileNameForOutput(exchange);
   }
 }

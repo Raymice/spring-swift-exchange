@@ -216,6 +216,19 @@ public class CamelUtils {
   }
 
   /**
+   * Set file name for output in Camel Exchange based on updated file name header.
+   *
+   * @param exchange Camel Exchange
+   */
+  public static void setFileNameForOutput(@NotNull Exchange exchange) {
+    // Get file name based on header
+    String fileName = getUpdatedFileName(exchange);
+
+    // Set file name for output
+    setFileName(exchange, fileName);
+  }
+
+  /**
    * Set header in Camel Exchange.
    *
    * @param exchange    Camel Exchange

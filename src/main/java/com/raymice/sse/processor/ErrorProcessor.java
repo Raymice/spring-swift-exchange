@@ -31,8 +31,13 @@ public class ErrorProcessor implements Processor {
     mdcService.setProcessId(CamelUtils.getProcessId(exchange));
     // Log error message
     log.error("‼️Error processing message: '{}'", exception.getMessage());
+
     // Update process status to FAILED in database
     new UpdateStatusProcessor(processService, ProcessEntity.Status.FAILED).process(exchange);
+
+    // Set file name for output
+    CamelUtils.setFileNameForOutput(exchange);
+
     mdcService.clear();
   }
 }
