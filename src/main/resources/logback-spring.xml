@@ -2,7 +2,10 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
+    <!--https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/instrumentation/logback/logback-appender-1.0/library/README.md#appender-instrumentation-for-logback-version-10-and-higher-->
     <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <captureMdcAttributes>*</captureMdcAttributes>
+        <captureLoggerContext>true</captureLoggerContext>
     </appender>
 
     <root level="INFO">
