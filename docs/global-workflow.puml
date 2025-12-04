@@ -1,21 +1,34 @@
 @startuml global-workflow
 
-skinparam ParticipantPadding 20
-skinparam BoxPadding 10
+skinparam ParticipantPadding 25
+skinparam BoxPadding 20
+
+'https://www.color-hex.com/color-palette/1064572
+!define RED #b33a3a
+!define BROWN #8c5e3c
+!define ORANGE #d9a441
+!define LIGHT_GREEN #6cb49b
+!define DARK_GREEN #3e6b3e
 
 box "External Service" #LightGrey
     participant Client  as Client
 end box
 
-box "Internal Service" #White
-    collections     "Input Folder"              as Input
-    collections     "Success Folder"            as Success
-    participant     "Spring SWIFT Exchange"     as App
-    database        Redis                       as Redis            #red
-    database        Postgres                    as PG               #white
-    queue           ActiveMQ                    as MQ               #orange
-    collections     "Unsupported Folder"        as Unsupported
-    collections     "Error Folder"              as Error
+box "Application" #White
+    participant     "Spring SWIFT Exchange"     as App          DARK_GREEN
+end box
+
+box "Data" #White
+    database        Redis                       as Redis        ORANGE
+    database        Postgres                    as PG           ORANGE
+    queue           ActiveMQ                    as MQ           ORANGE
+end box
+
+box "Files" #White
+    collections     "Input Folder"              as Input        BROWN
+    collections     "Unsupported Folder"        as Unsupported  RED
+    collections     "Error Folder"              as Error        RED
+    collections     "Success Folder"            as Success      DARK_GREEN
 end box
 
 == File reception: FileRoute ==
@@ -27,10 +40,10 @@ group Camel File Listener
     Input --> App: Find new file
     App -> Redis: Ask lock on file
     
-    alt #LightGreen File not already locked
+    alt LIGHT_GREEN File not already locked
         Redis --> App: Lock the file
         App -> App: Move file to ".inprogress" folder
-    else #Pink File already locked
+    else RED File already locked
         Redis --> App: Lock not acquired
     end
 end
@@ -50,12 +63,12 @@ group #White Create Process
 
 end
 
-alt #LightGreen File extension is ".xml"
+alt LIGHT_GREEN File extension is ".xml"
     group #White Success
         App -> MQ: Send to the validator queue\n**Queue**: swift-validator
     end
 
-else #Pink Other extension
+else RED Other extension
     !includesub subparts.plantuml!UnsupportedException
 end 
 
@@ -66,20 +79,20 @@ MQ o-> App: Receive message\n**Queue**: swift-validator
 group Parse
     App -> App: Validate well formed
 
-    alt #LightGreen Well formed
+    alt LIGHT_GREEN Well formed
         group #White Validate MX
-            alt #LightGreen Valid & 008.001.08
+            alt LIGHT_GREEN Valid & 008.001.08
                 group #White 008.001.08
                     App -> PG: Update status\n**Database**: swiftdb\n**Table**: process\n**Status**: VALIDATED 
                     App -> MQ: Send to the specific queue\n**Queue**: swift-pacs.008.001.08
                 end
 
-            else #Pink Invalid
+            else RED Invalid
                 !includesub subparts.plantuml!UnsupportedException
             end
         end
 
-    else #Pink Malformed
+    else RED Malformed
         !includesub subparts.plantuml!MalformedXmlException
     end 
 

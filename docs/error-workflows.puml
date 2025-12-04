@@ -1,0 +1,48 @@
+@startuml error-workflows
+
+<style>
+activityDiagram {
+  FontColor black
+  FontName arial
+  FontSize 15
+}
+</style>
+
+'https://www.color-hex.com/color-palette/1064572
+!define NO_RETRY #b33a3a
+!define UNSUPPORTED #8c5e3c
+!define RETRYABLE #d9a441
+
+start
+
+switch (Exception Type)
+    case ( Non-retryable Exception )
+        group NO_RETRY Non-retryable
+            : Error log;
+            : Update status of process in database (FAILED);
+            : Output file in error folder;
+            : Push in Dead letter queue;
+        end group  
+
+    case ( Unsupported Exception )
+        group UNSUPPORTED Unsupported
+            : Warning log;
+            : Update status of process in database (UNSUPPORTED);
+            : Output file in unsupported folder;
+        end group 
+
+    case ( Retryable Exception )
+        group RETRYABLE Retryable 
+            while (Rety iteration) is (not exceeded)
+                :Retry the operation;
+            endwhile (exceeded)
+        end group  
+        NO_RETRY: Non-retryable Exception;
+        stop
+
+endswitch 
+
+stop
+
+
+@enduml

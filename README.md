@@ -183,6 +183,10 @@ Required variables for Postgres
 
 ![Global Workflow](./docs/global-workflow.svg)
 
+### Error/Exception Workflows
+
+![Error Workflows](./docs/error-workflows.svg)
+
 ---
 
 ## **📈 Performance**
@@ -260,19 +264,6 @@ Leverages the Grafana LGTM stack for comprehensive observability:
 - Things to evaluate/change before production
   - Add check on the health of the app (/actuator/health)
   - Need to update properties before usage in production (opentelemetry, security, ...)
-- Explain error workflows:
-  - Unsupported files
-    - Warning log
-    - Update status of process in database
-    - Output in unsupported folder
-  - Retryable error
-    - Retry mechanism with backoff
-    - If limit is reached, act like non-retryable error
-  - Non-retryable error
-    - Error log
-    - Update status of process in database
-    - Output in error folder
-    - Dead letter queue
 - Explore sharding & partitioning for Postgres (Citrus)
 - Review all javadoc
 - Add websites references for each topic
